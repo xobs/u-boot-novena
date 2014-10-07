@@ -492,7 +492,7 @@ static struct mx6_ddr_sysinfo novena_ddr_info = {
 	.rst_to_cke	= 0x23,	/* 33 cycles, 500us (JEDEC default) */
 };
 
-static struct mx6_ddr3_cfg elpida_4gib_1600 = {
+static struct mx6_ddr3_cfg novena_ddr3_cfg = {
 	.mem_speed	= 1600,
 	.density	= 4,
 	.width		= 64,
@@ -504,6 +504,12 @@ static struct mx6_ddr3_cfg elpida_4gib_1600 = {
 	.trcmin		= 4900,
 	.trasmin	= 3590,
 };
+
+uint32_t novena_read_spd(struct mx6_ddr_sysinfo *sysinfo,
+		         struct mx6_ddr3_cfg *cfg);
+int do_write_level_calibration(void);
+int do_dqs_calibration(void);
+int novena_memory_test(void);
 
 /*
  * called from C runtime startup code (arch/arm/lib/crt0.S:_main)
@@ -541,8 +547,18 @@ void board_init_f(ulong dummy)
 	preloader_console_init();
 
 	/* Start the DDR DRAM */
-	mx6dq_dram_iocfg(64, &novena_ddr_ioregs, &novena_grp_ioregs);
-	mx6_dram_cfg(&novena_ddr_info, &novena_mmdc_calib, &elpida_4gib_1600);
+
+	novena_read_spd(&novena_ddr_info, &novena_ddr3_cfg);
+	mx6dq_dram_iocfg(novena_ddr3_cfg.width,
+			 &novena_ddr_ioregs, &novena_grp_ioregs);
+	mx6_dram_cfg(&novena_ddr_info, &novena_mmdc_calib, &novena_ddr3_cfg);
+	do_write_level_calibration();
+	do_dqs_calibration();
+	printf("Running post-config memory test... ");
+	if (novena_memory_test())
+		printf("Fail!\n");
+	else
+		printf("Pass\n");
 
 	/* Clear the BSS. */
 	memset(__bss_start, 0, __bss_end - __bss_start);
