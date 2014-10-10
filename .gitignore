@@ -83,3 +83,10 @@ GTAGS
 *.orig
 *~
 \#*#
+
+# Debian build files
+/debian/build/
+/debian/u-boot-novena.debhelper.log
+/debian/files
+/debian/u-boot-novena.substvars
+/debian/u-boot-novena/

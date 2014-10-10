@@ -1,0 +1,5 @@
+#!/bin/sh
+source_dir=debian/build
+dest_dir=/usr/lib/u-boot-novena/
+echo $source_dir/u-boot.bin $dest_dir
+echo $source_dir/u-boot.spl $dest_dir

@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+files="u-boot.spl u-boot.bin"
+pkg=u-boot-novena
+
+if [ "$1" = remove ] ; then
+	for i in ${files}
+	do
+		[ -e "/boot/${file}" ] && rm -f "/boot/${file}"
+	done
+fi
+#DEBHELPER#
+exit 0
