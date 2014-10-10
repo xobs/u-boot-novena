@@ -1,3 +1,9 @@
+u-boot-novena (2014.10-novena-rc2) unstable; urgency=medium
+
+  * Add kernel postinst.d and prerm.d hooks.
+
+ -- Sean Cross <xobs@kosagi.com>  Fri, 10 Oct 2014 15:09:13 +0800
+
 u-boot-novena (2014.10-novena-rc1) unstable; urgency=low
 
   * Initial Release.
