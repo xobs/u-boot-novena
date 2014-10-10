@@ -1,0 +1,8 @@
+#!/bin/sh
+source_dir=debian/build
+dest_dir=/usr/share/u-boot-novena/
+echo $source_dir/u-boot.img $dest_dir
+echo $source_dir/u-boot.spl $dest_dir
+echo $source_dir/zz-novena-kernel-install /etc/kernel/postinst.d/
+echo debian/novena-install-spl /usr/sbin/
+echo debian/novena-install-spl.8 /usr/share/man/man8

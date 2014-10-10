@@ -1,0 +1,56 @@
+#!/bin/sh
+file=/boot/u-boot.spl
+disk=/dev/disk/by-path/platform-2198000.usdhc
+
+print_help() {
+	echo "Novena Secondary Program Loader installer"
+	echo "Install the U-Boot SPL to the boot area of a disk."
+	echo ""
+	echo "Usage:"
+	echo "    novena-install-spl [-d disk] [-s spl-file]"
+	echo "Options:"
+	echo "    -d  --disk  Which disk to install onto.  If unspecified, defaults to"
+	echo "                ${disk}"
+	echo "    -s  --spl   Path to the SPL file to install.  If unspecified,"
+	echo "                defaults to ${file}"
+	exit 0
+}
+
+args=`getopt -o hd:s: --long help,disk:,spl: \
+     -n 'novena-install-spl' -- "$@"`
+
+if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
+
+# Note the quotes around `$TEMP': they are essential!
+eval set -- "$args"
+
+while true ; do
+	case "$1" in
+		-h|--help) print_help ; exit 0 ;;
+		-d|--disk) disk="$2" ; shift 2 ;;
+		-s|--spl) file="$2" ; shift 2 ;;
+		--) shift ; break ;;
+		*) echo "Internal error!" ; exit 1 ;;
+	esac
+done
+
+
+if [ ! -e "${file}" ]
+then
+	echo "Error: Unable to find SPL file ${file}"
+	exit 2
+fi
+
+if [ ! -e "${disk}" ]
+then
+	echo "Error: Couldn't find destination drive ${disk}"
+	exit 3
+fi
+
+if ! dd if="${file}" of="${disk}" bs=1024 seek=1 conv=notrunc 2> /dev/null
+then
+	echo "Error: Unable to write SPL"
+	exit 4
+fi
+
+echo "Successfully wrote ${file} to ${disk}"

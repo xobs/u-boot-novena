@@ -1,0 +1,14 @@
+#!/bin/sh
+set -e
+
+files="u-boot.spl u-boot.img"
+pkg=u-boot-novena
+
+if [ "$1" = configure ] ; then
+	for file in ${files}
+	do
+                cp /usr/share/${pkg}/${file} /boot/${file}
+	done
+fi
+#DEBHELPER#
+exit 0
