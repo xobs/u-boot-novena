@@ -1,0 +1,2 @@
+u-boot-novena: description-synopsis-starts-with-article
+u-boot-novena: executable-not-elf-or-script usr/share/u-boot-novena/u-boot.img

@@ -1,0 +1,29 @@
+== Installation ==
+
+At this point, you must install U-Boot to flash yourself.
+
+Some examples using mtd-utils:
+
+SheevaPlug:
+
+ sudo flash_erase /dev/mtd0 0 0
+ sudo nandwrite -p /dev/mtd0 /usr/lib/u-boot/sheevaplug/u-boot.kwb
+
+GuruPlug:
+
+ sudo flash_erase /dev/mtd0 0 0
+ sudo nandwrite -p /dev/mtd0 /usr/lib/u-boot/guruplug/u-boot.kwb
+
+MX53LOCO:
+
+ sudo dd bs=1024 if=u-boot.imx of=/dev/sdX seek=1
+
+DreamPlug:
+
+ At this point you cannot write to the SPI/NOR flash from Linux,
+ so you will need to replace U-Boot from within U-Boot.
+
+== U-Boot environment tools ==
+
+fw_printenv / fw_setenv read /etc/fw_env.config for configuration.
+

@@ -1,0 +1,4 @@
+#!/bin/sh
+echo "Installing new kernel to /boot"
+cp "$2" "/boot/zimage"
+cp "$2.dtb" "/boot/novena.dtb"
