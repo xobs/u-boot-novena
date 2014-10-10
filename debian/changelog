@@ -1,3 +1,9 @@
+u-boot-novena (2014.10-novena-rc3) unstable; urgency=medium
+
+  * Correct prerm script.
+
+ -- Sean Cross <xobs@kosagi.com>  Fri, 10 Oct 2014 17:47:10 +0800
+
 u-boot-novena (2014.10-novena-rc2) unstable; urgency=medium
 
   * Add kernel postinst.d and prerm.d hooks.
