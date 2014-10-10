@@ -1,0 +1,27 @@
+.TH NOVENA-INSTALL-SPL 8 "14 Oct 2014" Novena "Linux System Administration"
+.SH NAME
+novena-install-spl \- install U-Boot SPL file to disk image
+.SH SYNOPSIS
+\fBnovena-install-spl\fR [\fB-d\fR \fIroot-device\fR] [\fB-s\fR \fIroot-device\fR]
+
+.SH DESCRIPTION
+.LP
+U-Boot requires a Secondary Program Loader to configure memory timings and
+to load u-boot.img off of the disk.  The SPL file must be located at offset
+1024 from the start of the disk.  
+.B novena-install-spl
+is responsible for installing the SPL file to the start of the disk.
+.SH OPTIONS
+.TP
+.BI \-d " root-device"
+Path to the root device.  If connected via MMC, likely \fI/dev/mmcblk0\fR
+or \fI/dev/mmcblk1\fR, but use \fI/dev/disk/by-path/platform-2198000.usdhc\fR
+to explicitly specify the internal card.  If connected via USB or STA, likely
+\fI/dev/sda\fR.  If omitted, will default to the internal card at
+\fI/dev/disk/by-path/platform-2198000.usdhc\fR.
+.TP
+.BI \-s " path-to-spl"
+Full path to the SPL file.  If unspecified, will default to
+\fI/boot/u-boot.spl\fR.
+.SH AUTHORS
+Written by Sean Cross <xobs@kosagi.com>

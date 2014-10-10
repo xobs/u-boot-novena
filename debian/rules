@@ -1,0 +1,34 @@
+#!/usr/bin/make -f
+#DH_VERBOSE = 1
+
+# support parallel build using DEB_BUILD_OPTIONS=parallel=N
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+  MAKEFLAGS += -j$(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+endif
+
+# the upstream build passes LDFLAGS directly to ld instead of calling gcc for
+# linking; so instead of passing -Wl,foo in LDFLAGS as in automake builds, one
+# should set LDFLAGS to foo directly
+comma := ,
+LDFLAGS := $(patsubst -Wl$(comma)%,%,$(LDFLAGS))
+
+# main packaging script based on dh7 syntax
+%:
+	dh $@  --parallel
+
+override_dh_auto_build:
+	builddir=`pwd`/debian/build/; \
+	mkdir -p $$builddir; \
+	mkdir -p $$builddir/etc/kernel/postinst.d; \
+	$(MAKE) O=$$builddir novena_config; \
+	$(MAKE) -j O=$$builddir; \
+	install -m 644 $$builddir/u-boot.img $$builddir/u-boot.img; \
+	install -m 644 $$builddir/SPL $$builddir/u-boot.spl; \
+	install -m 755 debian/novena-kernel-install-postinst $$builddir/zz-novena-kernel-install; \
+
+override_dh_auto_test override_dh_auto_install:
+# skip tests.
+
+override_dh_clean:
+	rm -rf debian/build/
+	dh_clean
