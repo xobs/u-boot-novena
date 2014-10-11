@@ -289,6 +289,10 @@
 	"net_nfs="							\
 		"run netload nfsargs addip addargs ; "			\
 		"bootm ${kernel_addr_r}\0"				\
+	"prephdmi=true"							\
+	"preplcd=true"							\
+	"prepethernet=true"						\
+	"prepmisc=true"							\
 	"bootenv=uEnv.txt\0"						\
 	"loadbootenv=load ${bootsrc} ${bootdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv="						\
@@ -336,6 +340,10 @@
 		"fi ; "							\
 		"fatload ${bootsrc} ${bootdev} ${kernel_addr_r} zImage${rec} ; " \
 		"fatload ${bootsrc} ${bootdev} ${fdt_addr_r} novena${rec}.dtb ; " \
+		"run prephdmi ; "					\
+		"run preplcd ; "					\
+		"run prepethernet ; "					\
+		"run prepmisc ; "					\
 		"setenv bootargs ${bootargs} root=${rootdev} console=${consdev} ; " \
 		"bootz ${kernel_addr_r} - ${fdt_addr_r} ; "		\
 		"\0"							\

@@ -1,3 +1,10 @@
+u-boot-novena (2014.10-novena-rc5) unstable; urgency=medium
+
+  * Remove prerm script (to prevent it from removing the kernel)
+  * Update boot script to add hooks for display configuration
+
+ -- Sean Cross <xobs@kosagi.com>  Sat, 11 Oct 2014 21:23:36 +0800
+
 u-boot-novena (2014.10-novena-rc4) unstable; urgency=medium
 
   * Package u-boot.img instead of u-boot.bin
