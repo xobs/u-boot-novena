@@ -1,5 +1,0 @@
-#!/bin/sh
-echo "Removing old kernel to /boot"
-rm -f "/boot/zimage"
-rm -f "/boot/novena.dtb"
-echo "Warning: No kernel is currently installed"
