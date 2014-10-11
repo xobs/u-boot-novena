@@ -1,0 +1,35 @@
+#!/bin/sh
+
+default_spl=/boot/u-boot.spl
+
+if [ -z $1 ]
+then
+	echo "Installs the U-Boot Secondary Program Loader to the Boot MBR"
+	echo "Usage: $0 [path-to-root-device] [[path-to-spl]]"
+	echo "If no path-to-spl is used, ${default_spl} will be assumed."
+	exit 1
+fi
+
+if [ ! -z "$2" ]
+then
+	default_spl="$2"
+fi
+
+if [ ! -e "${default_spl}" ]
+then
+	echo "Error: Unable to find SPL file ${default_spl}"
+	exit 2
+fi
+
+if [ ! -e "$1" ]
+then
+	echo "Error: Couldn't find destination drive $1"
+	exit 3
+fi
+
+if dd if="${default_spl}" of="$1" bs=1024 seek=1 conv=notrunc 2> /dev/null
+then
+	echo "Error: Unable to write SPL"
+	exit 4
+fi
+
