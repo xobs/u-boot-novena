@@ -86,10 +86,15 @@ void ft_board_setup(void *blob, bd_t *bd)
 		if (!(data.features & feature_retina)) {
 			fdt_del_by_path(blob, "/soc/aips-bus@02000000/ldb@020e0008");
 			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@73");
+			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@73");
 		}
 	}
 
 	else if (data.version == 2) {
+		/* In version 2, this indicates whether an LVDS-to-eDP chip is present */
+		if (!(data.features & feature_retina))
+			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@73");
+
 		if (!(data.lvds1.flags & channel_present)) {
 			fdt_del_by_path(blob, "/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@0");
 		}
