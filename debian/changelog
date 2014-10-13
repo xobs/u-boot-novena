@@ -1,3 +1,9 @@
+u-boot-novena (2014.10-novena-rc6) unstable; urgency=medium
+
+  * Add EEPROM personality support
+
+ -- Sean Cross <xobs@kosagi.com>  Mon, 13 Oct 2014 18:23:08 +0800
+
 u-boot-novena (2014.10-novena-rc5) unstable; urgency=medium
 
   * Remove prerm script (to prevent it from removing the kernel)
