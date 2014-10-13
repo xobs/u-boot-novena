@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Sean Cross <xobs@kosagi.com>
 Build-Depends: debhelper (>= 9)
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Homepage: http://kosagi.com
 #Vcs-Git: git://anonscm.debian.org/collab-maint/u-boot-novena.git
 #Vcs-Browser: http://anonscm.debian.org/?p=collab-maint/u-boot-novena.git;a=summary
