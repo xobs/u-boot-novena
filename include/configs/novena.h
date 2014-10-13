@@ -23,6 +23,7 @@
 #define CONFIG_KEYBOARD
 #define CONFIG_MXC_GPIO
 #define CONFIG_OF_LIBFDT
+#define CONFIG_OF_BOARD_SETUP
 #define CONFIG_REGEX
 #define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_SYS_NO_FLASH
@@ -257,6 +258,7 @@
 	"rootpath=/opt/eldk-5.5/armv7a-hf/rootfs-qte-sdk\0"		\
 	"kernel_addr_r=0x12000000\0"					\
 	"fdt_addr_r=0x11ff0000\0"					\
+	"initrd_addr_r=-\0"						\
 	"addcons="							\
 		"setenv bootargs ${bootargs} "				\
 		"console=${consdev},${baudrate}\0"			\
@@ -315,12 +317,6 @@
 		"else ; "						\
 			"echo To hook boot process, add a variable called uenvcmd ; " \
 		"fi ; "							\
-		"if sata init ; then " /* Switch to SATA if present */  \
-			"echo SATA device detected. ; "			\
-			"setenv rootdev PARTUUID=4e6f7653-03 ; " /* NovS */ \
-		"else ; "						\
-			"echo Will boot from internal MMC. ; "		\
-		"fi ; "							\
 		"if gpio input 110 ; then " /* Test recovery button */  \
 			"echo Press Control-C to enter U-Boot shell, or wait to enter recovery mode ; " \
 			"if sleep 2 ; then true; else exit ; fi ; "	\
@@ -340,12 +336,11 @@
 		"fi ; "							\
 		"fatload ${bootsrc} ${bootdev} ${kernel_addr_r} zImage${rec} ; " \
 		"fatload ${bootsrc} ${bootdev} ${fdt_addr_r} novena${rec}.dtb ; " \
-		"run prephdmi ; "					\
-		"run preplcd ; "					\
-		"run prepethernet ; "					\
-		"run prepmisc ; "					\
+		"fdt addr ${fdt_addr_r} ; "				\
+		"fdt boardsetup ; "					\
 		"setenv bootargs ${bootargs} root=${rootdev} console=${consdev} ; " \
-		"bootz ${kernel_addr_r} - ${fdt_addr_r} ; "		\
+		"run finalprep ; "					\
+		"bootz ${kernel_addr_r} ${initrd_addr_r} ${fdt_addr_r} ; " \
 		"\0"							\
 	"update_sd_spl_filename=SPL\0"					\
 	"update_sd_uboot_filename=u-boot.img\0"				\

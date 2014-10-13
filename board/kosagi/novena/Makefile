@@ -7,5 +7,5 @@
 ifdef CONFIG_SPL_BUILD
 obj-y	:= novena_spl.o ddr3.o
 else
-obj-y	:= novena.o
+obj-y	:= novena.o eeprom.o
 endif
