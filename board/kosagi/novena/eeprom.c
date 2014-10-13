@@ -64,6 +64,11 @@ void ft_board_setup(void *blob, bd_t *bd)
 	if (!getenv("ethaddr"))
 		eth_setenv_enetaddr("ethaddr", data.mac);
 
+	if (getenv("rec")) {
+		puts("Detected recovery mode, leaving everything enabled\n");
+		return;
+	}
+
 	if ((data.features & feature_es8328))
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/es8328@11");
 	if (!(data.features & feature_senoko))
@@ -74,8 +79,8 @@ void ft_board_setup(void *blob, bd_t *bd)
 	if (!(data.features & feature_gbit))
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/ethernet@02188000");
 
-	/* Boot from SATA if we're set up to do so, and not starting recovery */
-	if (!(data.features & feature_rootsrc_sata) && !getenv("rec"))
+	/* Boot from SATA if we're set up to do so */
+	if (!(data.features & feature_rootsrc_sata))
 		setenv("rootdev", "PARTUUID=4e6f7653-03"); /* "NovS" */
 
 	/* Older version had simpler panel selection */
