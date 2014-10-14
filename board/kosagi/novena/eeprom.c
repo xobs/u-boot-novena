@@ -69,7 +69,7 @@ void ft_board_setup(void *blob, bd_t *bd)
 		return;
 	}
 
-	if ((data.features & feature_es8328))
+	if (!(data.features & feature_es8328))
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/es8328@11");
 	if (!(data.features & feature_senoko))
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a0000/bq20z75@b");
@@ -126,11 +126,14 @@ void ft_board_setup(void *blob, bd_t *bd)
 			/* XXX Configure hdmi display timings here */
 		}
 
-		if (!(data.features & feature_rootsrc_sata))
+		if (!(data.features & feature_eepromoops))
 			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/eepromoops@56");
 		else {
 			/* XXX Configure eepromoops here */
 		}
+
+		if (data.features & feature_rootsrc_sata)
+			setenv("rootdev", "PARTUUID=4e6f7653-03"); /* NovS */ \
 	}
 }
 
