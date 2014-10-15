@@ -42,6 +42,64 @@ DECLARE_GLOBAL_DATA_PTR;
 #define NOVENA_SD_WP		IMX_GPIO_NR(1, 2)
 #define NOVENA_SD_CD		IMX_GPIO_NR(1, 4)
 
+enum boot_device {
+	MX6_SD0_BOOT,
+	MX6_SD1_BOOT,
+	MX6_MMC_BOOT,
+	MX6_NAND_BOOT,
+	MX6_SATA_BOOT,
+	MX6_WEIM_NOR_BOOT,
+	MX6_ONE_NAND_BOOT,
+	MX6_PATA_BOOT,
+	MX6_I2C_BOOT,
+	MX6_SPI_NOR_BOOT,
+	MX6_UNKNOWN_BOOT,
+	MX6_BOOT_DEV_NUM = MX6_UNKNOWN_BOOT,
+};
+
+static enum boot_device get_boot_device(void)
+{
+	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	uint bt_mem_ctl = (soc_sbmr & 0x000000FF) >> 4 ;
+	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
+	uint bt_mem_mmc = (soc_sbmr & 0x00001000) >> 12;
+
+	switch (bt_mem_ctl) {
+	case 0x0:
+		if (bt_mem_type)
+			return MX6_ONE_NAND_BOOT;
+		else
+			return MX6_WEIM_NOR_BOOT;
+		break;
+	case 0x2:
+			return MX6_SATA_BOOT;
+		break;
+	case 0x3:
+		if (bt_mem_type)
+			return MX6_I2C_BOOT;
+		else
+			return MX6_SPI_NOR_BOOT;
+		break;
+	case 0x4:
+	case 0x5:
+		if (bt_mem_mmc)
+			return MX6_SD0_BOOT;
+		else
+			return MX6_SD1_BOOT;
+		break;
+	case 0x6:
+	case 0x7:
+		return MX6_MMC_BOOT;
+		break;
+	case 0x8 ... 0xf:
+		return MX6_NAND_BOOT;
+		break;
+	default:
+		return MX6_UNKNOWN_BOOT;
+		break;
+	}
+}
+
 /*
  * GPIO button
  */
@@ -338,6 +396,27 @@ int misc_init_r(void)
 
 	/* Set ethernet address from EEPROM. */
 	eth_setenv_enetaddr("ethaddr", data.mac);
+
+	/* Set boot environment variables */
+	switch(get_boot_device()) {
+	case MX6_SD0_BOOT:
+		setenv("bootdev", "0");
+		setenv("bootsrc", "mmc");
+		break;
+
+	case MX6_SD1_BOOT:
+		setenv("bootdev", "1");
+		setenv("bootsrc", "mmc");
+		break;
+
+	case MX6_SATA_BOOT:
+		setenv("bootdev", "0");
+		setenv("bootsrc", "sata");
+		break;
+
+	default:
+		break;
+	}
 
 	return ret;
 }

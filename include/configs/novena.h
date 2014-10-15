@@ -297,8 +297,6 @@
 		"echo Importing environment from ${bootsrc} ... ; "	\
                 "env import -t -r $loadaddr $filesize\0"		\
 	"novena_boot="							\
-		"setenv bootsrc mmc ; "					\
-		"setenv bootdev 0 ; "					\
 		"setenv rootdev PARTUUID=4e6f764d-03 ; " /* NovM */	\
 		"setenv bootargs init=/lib/systemd/systemd rootwait rw ; " \
 		"if run loadbootenv; then "				\
