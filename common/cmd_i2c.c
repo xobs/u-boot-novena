@@ -317,6 +317,7 @@ static int do_i2c_md ( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	u_char	chip;
 	uint	addr, alen, length;
 	int	j, nbytes, linebytes;
+	int	errors = 0;
 
 	/* We use the last specified parameters, unless new ones are
 	 * entered.
@@ -369,9 +370,10 @@ static int do_i2c_md ( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 
 		linebytes = (nbytes > DISP_LINE_LEN) ? DISP_LINE_LEN : nbytes;
 
-		if (i2c_read(chip, addr, alen, linebuf, linebytes) != 0)
+		if (i2c_read(chip, addr, alen, linebuf, linebytes) != 0) {
 			puts ("Error reading the chip.\n");
-		else {
+			errors++;
+		} else {
 			printf("%04x:", addr);
 			cp = linebuf;
 			for (j=0; j<linebytes; j++) {
@@ -397,7 +399,7 @@ static int do_i2c_md ( cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 	i2c_dp_last_alen   = alen;
 	i2c_dp_last_length = length;
 
-	return 0;
+	return errors;
 }
 
 /**

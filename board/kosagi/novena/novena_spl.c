@@ -70,6 +70,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define NOVENA_PCIE_POWER_ON_GPIO	IMX_GPIO_NR(7, 12)
 #define NOVENA_PCIE_WAKE_UP_GPIO	IMX_GPIO_NR(3, 22)
 #define NOVENA_PCIE_DISABLE_GPIO	IMX_GPIO_NR(2, 16)
+#define NOVENA_LVDS_PWRON		IMX_GPIO_NR(5, 28)
+#define NOVENA_BACKLIGHT_PWRON		IMX_GPIO_NR(4, 15)
 
 /*
  * Audio
@@ -365,10 +367,22 @@ static iomux_v3_cfg_t hdmi_pads[] = {
 	MX6_PAD_EIM_A24__GPIO5_IO04 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
+static iomux_v3_cfg_t lvds_pads[] = {
+	/* Entire display subsystem power */
+	MX6_PAD_CSI0_DAT10__GPIO5_IO28 | MUX_PAD_CTRL(NO_PAD_CTRL),
+
+	/* Backlight pin */
+	MX6_PAD_KEY_ROW4__GPIO4_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
 static void novena_spl_setup_iomux_video(void)
 {
 	imx_iomux_v3_setup_multiple_pads(hdmi_pads, ARRAY_SIZE(hdmi_pads));
 	gpio_direction_input(NOVENA_HDMI_GHOST_HPD);
+
+	imx_iomux_v3_setup_multiple_pads(lvds_pads, ARRAY_SIZE(lvds_pads));
+	gpio_direction_output(NOVENA_LVDS_PWRON, 1);
+	gpio_direction_output(NOVENA_BACKLIGHT_PWRON, 1);
 }
 #else
 static inline void novena_spl_setup_iomux_video(void) {}

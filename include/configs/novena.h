@@ -291,10 +291,6 @@
 	"net_nfs="							\
 		"run netload nfsargs addip addargs ; "			\
 		"bootm ${kernel_addr_r}\0"				\
-	"prephdmi=true"							\
-	"preplcd=true"							\
-	"prepethernet=true"						\
-	"prepmisc=true"							\
 	"bootenv=uEnv.txt\0"						\
 	"loadbootenv=load ${bootsrc} ${bootdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv="						\
@@ -311,11 +307,11 @@
 		"else ; "						\
 			"echo To override boot, create a file on the internal MMC called ${bootenv} ; " \
 		"fi ; "							\
-		"if test -n $uenvcmd; then "				\
-			"echo Running uenvcmd ... ; "			\
-			"run uenvcmd ; "				\
+		"if test -n $earlyhook; then "				\
+			"echo Running earlyhook ... ; "			\
+			"run earlyhook ; "				\
 		"else ; "						\
-			"echo To hook boot process, add a variable called uenvcmd ; " \
+			"echo To hook early boot process, add a variable called earlyhook ; " \
 		"fi ; "							\
 		"if gpio input 110 ; then " /* Test recovery button */  \
 			"echo Press Control-C to enter U-Boot shell, or wait to enter recovery mode ; " \
@@ -327,8 +323,12 @@
 		"else ; "						\
 			"echo Hold recovery button to boot to recovery, or enter U-Boot shell. ; " \
 		"fi ; "							\
+		"i2c dev 2 ; "						\
 		"if hdmidet ; then "					\
-			"echo HDMI monitor detected ; "		\
+			"echo HDMI monitor detected ; "			\
+			"setenv consdev tty0 ; "			\
+		"elif i2c md 0x5c 0 1 ; then "				\
+			"echo IT6251 bridge chip detected ; "		\
 			"setenv consdev tty0 ; "			\
 		"else ; "						\
 			"echo No video detected, using serial port ; "	\
@@ -339,7 +339,12 @@
 		"fdt addr ${fdt_addr_r} ; "				\
 		"fdt boardsetup ; "					\
 		"setenv bootargs ${bootargs} root=${rootdev} console=${consdev} ; " \
-		"run finalprep ; "					\
+		"if test -n $finalhook; then "				\
+			"echo Running finalhook ... ; "			\
+			"run finalhook ; "				\
+		"else ; "						\
+			"echo To hook late boot process, add a variable called finalhook ; " \
+		"fi ; "							\
 		"bootz ${kernel_addr_r} ${initrd_addr_r} ${fdt_addr_r} ; " \
 		"\0"							\
 	"update_sd_spl_filename=SPL\0"					\
