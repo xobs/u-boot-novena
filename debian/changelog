@@ -1,3 +1,9 @@
+u-boot-novena (2014.10-novena-rc10) unstable; urgency=medium
+
+  * Fix feature disabling
+
+ -- Sean Cross <xobs@kosagi.com>  Thu, 16 Oct 2014 15:55:44 +0800
+
 u-boot-novena (2014.10-novena-rc9) unstable; urgency=medium
 
   * Support booting from external SD card
