@@ -319,7 +319,7 @@
 			"setenv bootargs ${bootargs} recovery ; "	\
 			"setenv rootdev PARTUUID=4e6f764d-03 ; " /* NovM */ \
 		"else ; "						\
-			"echo Hold recovery button to boot to recovery, or enter U-Boot shell. ; " \
+			"echo Hold recovery button to boot to recovery, or to enter U-Boot shell. ; " \
 		"fi ; "							\
 		"i2c dev 2 ; "						\
 		"if hdmidet ; then "					\
@@ -334,8 +334,6 @@
 		"fi ; "							\
 		"fatload ${bootsrc} ${bootdev} ${kernel_addr_r} zImage${rec} ; " \
 		"fatload ${bootsrc} ${bootdev} ${fdt_addr_r} novena${rec}.dtb ; " \
-		"fdt addr ${fdt_addr_r} ; "				\
-		"fdt boardsetup ; "					\
 		"setenv bootargs ${bootargs} root=${rootdev} console=${consdev} ; " \
 		"if test -n $finalhook; then "				\
 			"echo Running finalhook ... ; "			\

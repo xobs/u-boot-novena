@@ -16,7 +16,7 @@ static int fdt_del_by_path(void *fdt, const char *path)
 	 * Get the path.  The root node is an oddball, the offset
 	 * is zero and has no name.
 	 */
-	nodeoffset = fdt_path_offset (working_fdt, path);
+	nodeoffset = fdt_path_offset(working_fdt, path);
 	if (nodeoffset < 0) {
 		/*
 		 * Not found or something else bad happened.
@@ -72,16 +72,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 	if (!(data.features & feature_es8328))
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/es8328@11");
 	if (!(data.features & feature_senoko))
-		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a0000/bq20z75@b");
+		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a0000/bq20z75@0b");
 	if (!(data.features & feature_pcie))
 		fdt_del_by_path(blob, "/soc/pcie@0x01000000");
 
 	if (!(data.features & feature_gbit))
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/ethernet@02188000");
-
-	/* Boot from SATA if we're set up to do so */
-	if (!(data.features & feature_rootsrc_sata))
-		setenv("rootdev", "PARTUUID=4e6f7653-03"); /* "NovS" */
 
 	/* Older version had simpler panel selection */
 	if (data.version == 1) {
@@ -90,15 +86,14 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 		if (!(data.features & feature_retina)) {
 			fdt_del_by_path(blob, "/soc/aips-bus@02000000/ldb@020e0008");
-			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@73");
-			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@73");
+			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@5c");
 		}
 	}
 
 	else if (data.version == 2) {
 		/* In version 2, this indicates whether an LVDS-to-eDP chip is present */
 		if (!(data.features & feature_retina))
-			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@73");
+			fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@5c");
 
 		if (!(data.lvds1.flags & channel_present)) {
 			fdt_del_by_path(blob, "/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@0");
