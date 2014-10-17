@@ -363,7 +363,7 @@ struct novena_eeprom_data {
 	uint16_t	features;
 };
 
-int misc_init_r(void)
+static int set_ethaddr(void)
 {
 	struct novena_eeprom_data data;
 	uchar *datap = (uchar *)&data;
@@ -378,25 +378,30 @@ int misc_init_r(void)
 	ret = i2c_set_bus_num(2);
 	if (ret) {
 		puts("Cannot select EEPROM I2C bus.\n");
-		return 0;
+		return 1;
 	}
 
 	/* EEPROM is at address 0x56. */
 	ret = eeprom_read(0x56, 0, datap, sizeof(data));
 	if (ret) {
 		puts("Cannot read I2C EEPROM.\n");
-		return 0;
+		return ret;
 	}
 
 	/* Check EEPROM signature. */
 	if (memcmp(data.signature, signature, 6)) {
 		puts("Invalid I2C EEPROM signature.\n");
-		return 0;
+		return 1;
 	}
 
 	/* Set ethernet address from EEPROM. */
 	eth_setenv_enetaddr("ethaddr", data.mac);
 
+	return 0;
+}
+
+static int set_bootdev(void)
+{
 	/* Set boot environment variables */
 	switch(get_boot_device()) {
 	case MX6_SD0_BOOT:
@@ -415,8 +420,19 @@ int misc_init_r(void)
 		break;
 
 	default:
+		return 1;
 		break;
 	}
+
+	return 0;
+}
+
+int misc_init_r(void)
+{
+	int ret = 0;
+
+	ret |= set_bootdev();
+	ret |= set_ethaddr();
 
 	return ret;
 }
