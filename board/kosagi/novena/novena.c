@@ -355,25 +355,26 @@ int power_init_board(void)
 }
 
 /* EEPROM configuration data */
-struct novena_eeprom_data {
+static struct novena_eeprom_data {
 	uint8_t		signature[6];
 	uint8_t		version;
 	uint8_t		reserved;
 	uint32_t	serial;
 	uint8_t		mac[6];
 	uint16_t	features;
-};
+} eeprom_data;
 
-static int set_ethaddr(void)
+static int is_valid_eeprom_data(void)
 {
-	struct novena_eeprom_data data;
-	uchar *datap = (uchar *)&data;
 	const char *signature = "Novena";
-	int ret;
 
-	/* If 'ethaddr' is already set, do nothing. */
-	if (getenv("ethaddr"))
-		return 0;
+	/* Check EEPROM signature. */
+	return !memcmp(eeprom_data.signature, signature, 6);
+}
+
+static int read_eeprom(void)
+{
+	int ret;
 
 	/* EEPROM is at bus 2. */
 	ret = i2c_set_bus_num(2);
@@ -383,20 +384,24 @@ static int set_ethaddr(void)
 	}
 
 	/* EEPROM is at address 0x56. */
-	ret = eeprom_read(0x56, 0, datap, sizeof(data));
+	ret = eeprom_read(0x56, 0, (void *)&eeprom_data, sizeof(eeprom_data));
 	if (ret) {
 		puts("Cannot read I2C EEPROM.\n");
 		return ret;
 	}
 
-	/* Check EEPROM signature. */
-	if (memcmp(data.signature, signature, 6)) {
-		puts("Invalid I2C EEPROM signature.\n");
+	return is_valid_eeprom_data();
+}
+
+static int set_ethaddr(void)
+{
+	/* If 'ethaddr' is already set, do nothing. */
+	if (getenv("ethaddr"))
 		return 0;
-	}
 
 	/* Set ethernet address from EEPROM. */
-	eth_setenv_enetaddr("ethaddr", data.mac);
+	if (is_valid_eeprom_data())
+		eth_setenv_enetaddr("ethaddr", eeprom_data.mac);
 
 	return 0;
 }
@@ -418,12 +423,18 @@ static int set_bootdev(void)
 	case MX6_SATA_BOOT:
 		setenv("bootdev", "0");
 		setenv("bootsrc", "sata");
+
 		break;
 
 	default:
 		return 1;
 		break;
 	}
+
+	if (is_valid_eeprom_data() && (eeprom_data.features & 0x100))
+		setenv("rootdev", "PARTUUID=4e6f7653-03"); /* NovS */
+	else
+		setenv("rootdev", "PARTUUID=4e6f764d-03"); /* NovM */
 
 	return 0;
 }
@@ -432,6 +443,7 @@ int misc_init_r(void)
 {
 	int ret = 0;
 
+	read_eeprom();
 	ret |= set_bootdev();
 	ret |= set_ethaddr();
 

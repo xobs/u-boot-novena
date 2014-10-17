@@ -253,7 +253,6 @@
 	"consdev=ttymxc1\0"						\
 	"baudrate=115200\0"						\
 	"bootdev=/dev/mmcblk0p1\0"					\
-	"rootdev=/dev/mmcblk0p2\0"					\
 	"netdev=eth0\0"							\
 	"rootpath=/opt/eldk-5.5/armv7a-hf/rootfs-qte-sdk\0"		\
 	"kernel_addr_r=0x12000000\0"					\
@@ -297,7 +296,6 @@
 		"echo Importing environment from ${bootsrc} ... ; "	\
                 "env import -t -r $loadaddr $filesize\0"		\
 	"novena_boot="							\
-		"setenv rootdev PARTUUID=4e6f764d-03 ; " /* NovM */	\
 		"setenv bootargs init=/lib/systemd/systemd rootwait rw ; " \
 		"if run loadbootenv; then "				\
 			"echo Loaded environment from ${bootenv} ; "	\
