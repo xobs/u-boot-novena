@@ -59,7 +59,8 @@ enum boot_device {
 
 static enum boot_device get_boot_device(void)
 {
-	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	struct src *psrc = (struct src *)SRC_BASE_ADDR;
+	unsigned soc_sbmr = readl(&psrc->sbmr1);
 	uint bt_mem_ctl = (soc_sbmr & 0x000000FF) >> 4 ;
 	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
 	uint bt_mem_mmc = (soc_sbmr & 0x00001000) >> 12;
@@ -391,7 +392,7 @@ static int set_ethaddr(void)
 	/* Check EEPROM signature. */
 	if (memcmp(data.signature, signature, 6)) {
 		puts("Invalid I2C EEPROM signature.\n");
-		return 1;
+		return 0;
 	}
 
 	/* Set ethernet address from EEPROM. */
