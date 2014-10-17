@@ -824,20 +824,58 @@ uint32_t novena_read_spd(struct mx6_ddr_sysinfo *sysinfo,
 	switch (spd.tck_min) {
 	case 0x14:
 		cfg->mem_speed = 800;
+		if (spd.tfaw_min == 0x40) {
+			cfg->pagesz = 1;
+			debug("\t1K page size\n");
+		} else if (spd.tfaw_min == 0x90) {
+			cfg->pagesz = 2;
+			debug("\t2K page size\n");
+		}
+		else
+			debug("Unknown page size: 0x%02x\n", spd.tfaw_min);
 		break;
 	case 0x0f:
 		cfg->mem_speed = 1066;
+		if (spd.tfaw_min == 0x2c) {
+			cfg->pagesz = 1;
+			debug("\t1K page size\n");
+		} else if (spd.tfaw_min == 0x90) {
+			cfg->pagesz = 2;
+			debug("\t2K page size\n");
+		}
+		else
+			debug("Unknown page size: 0x%02x\n", spd.tfaw_min);
 		break;
 	case 0x0c:
 		cfg->mem_speed = 1333;
+		if (spd.tfaw_min == 0xf0) {
+			cfg->pagesz = 1;
+			debug("\t1K page size\n");
+		} else if (spd.tfaw_min == 0x68) {
+			cfg->pagesz = 2;
+			debug("\t2K page size\n");
+		}
+		else
+			debug("Unknown page size: 0x%02x\n", spd.tfaw_min);
 		break;
 	case 0x0a:
 		cfg->mem_speed = 1600;
+		if (spd.tfaw_min == 0xf0) {
+			cfg->pagesz = 1;
+			debug("\t1K page size\n");
+		} else if (spd.tfaw_min == 0x40) {
+			cfg->pagesz = 2;
+			debug("\t2K page size\n");
+		}
+		else
+			debug("Unknown page size: 0x%02x\n", spd.tfaw_min);
 		break;
 	case 0x09:
+		cfg->pagesz = 1;
 		cfg->mem_speed = 1866;
 		break;
 	case 0x08:
+		cfg->pagesz = 1;
 		cfg->mem_speed = 2133;
 		break;
 	default:
@@ -874,9 +912,6 @@ uint32_t novena_read_spd(struct mx6_ddr_sysinfo *sysinfo,
 	cfg->rowaddr = ((spd.addressing >> 3) & 0x7) + 12;
 	cfg->coladdr = (spd.addressing & 0x7) + 9;
 	debug("\tRows: %d, Cols: %d\n", cfg->rowaddr, cfg->coladdr);
-
-	cfg->pagesz = 1;
-	debug("\t!!! Guessing a pagesz of 1 !!!\n");
 
 	sysinfo->ncs = ((spd.organization >> 3) & 0x7) + 1;
 	debug("\tThere are %d chip selects (ranks)\n", sysinfo->ncs);
