@@ -296,7 +296,7 @@
 		"echo Importing environment from ${bootsrc} ... ; "	\
                 "env import -t -r $loadaddr $filesize\0"		\
 	"novena_boot="							\
-		"setenv bootargs init=/lib/systemd/systemd rootwait rw ; " \
+		"setenv bootargs ${bootargs} init=/lib/systemd/systemd rootwait rw ; " \
 		"if run loadbootenv; then "				\
 			"echo Loaded environment from ${bootenv} ; "	\
 			"run importbootenv ; "				\
