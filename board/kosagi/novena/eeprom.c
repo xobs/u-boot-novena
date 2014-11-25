@@ -127,8 +127,13 @@ void ft_board_setup(void *blob, bd_t *bd)
 			/* XXX Configure eepromoops here */
 		}
 
-		if (data.features & feature_rootsrc_sata)
+		if (data.features & feature_rootsrc_sata) {
 			setenv("rootdev", "PARTUUID=4e6f7653-03"); /* NovS */ \
+			char tmpargs[1024];
+			strcpy(tmpargs, getenv("bootargs"));
+			strcat(tmpargs, " resume=PARTUUID=4e6f7653-02"); /* NovS */ \
+			setenv("bootargs", tmpargs);
+		}
 	}
 }
 
