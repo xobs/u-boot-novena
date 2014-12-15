@@ -71,8 +71,12 @@ void ft_board_setup(void *blob, bd_t *bd)
 
 	if (!(data.features & feature_es8328))
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/es8328@11");
-	if (!(data.features & feature_senoko))
+
+	if (!(data.features & feature_senoko)) {
 		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a0000/bq20z75@0b");
+		fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@02100000/senoko@20");
+	}
+
 	if (!(data.features & feature_pcie))
 		fdt_del_by_path(blob, "/soc/pcie@0x01000000");
 
@@ -127,13 +131,8 @@ void ft_board_setup(void *blob, bd_t *bd)
 			/* XXX Configure eepromoops here */
 		}
 
-		if (data.features & feature_rootsrc_sata) {
+		if (data.features & feature_rootsrc_sata)
 			setenv("rootdev", "PARTUUID=4e6f7653-03"); /* NovS */ \
-			char tmpargs[1024];
-			strcpy(tmpargs, getenv("bootargs"));
-			strcat(tmpargs, " resume=PARTUUID=4e6f7653-02"); /* NovS */ \
-			setenv("bootargs", tmpargs);
-		}
 	}
 }
 
