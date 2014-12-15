@@ -65,6 +65,7 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define NOVENA_AUDIO_PWRON		IMX_GPIO_NR(5, 17)
 #define NOVENA_FPGA_RESET_N_GPIO	IMX_GPIO_NR(5, 7)
+#define NOVENA_SENOKO_RESET_N_GPIO	IMX_GPIO_NR(5, 21)
 #define NOVENA_HDMI_GHOST_HPD		IMX_GPIO_NR(5, 4)
 #define NOVENA_PCIE_RESET_GPIO		IMX_GPIO_NR(3, 29)
 #define NOVENA_PCIE_POWER_ON_GPIO	IMX_GPIO_NR(7, 12)
@@ -210,6 +211,20 @@ static void novena_spl_setup_iomux_fpga(void)
 {
 	imx_iomux_v3_setup_multiple_pads(fpga_pads, ARRAY_SIZE(fpga_pads));
 	gpio_direction_output(NOVENA_FPGA_RESET_N_GPIO, 0);
+}
+
+/*
+ * Senoko Battery Board
+ */
+static iomux_v3_cfg_t senoko_pads[] = {
+	/* SENOKO_RESET_N */
+	MX6_PAD_CSI0_VSYNC__GPIO5_IO21 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static void novena_spl_setup_iomux_senoko(void)
+{
+	imx_iomux_v3_setup_multiple_pads(senoko_pads, ARRAY_SIZE(senoko_pads));
+	gpio_direction_output(NOVENA_SENOKO_RESET_N_GPIO, 1);
 }
 
 /*
@@ -636,6 +651,7 @@ void board_init_f(ulong dummy)
 	novena_spl_setup_iomux_i2c();
 	novena_spl_setup_iomux_pcie();
 	novena_spl_setup_iomux_sdhc();
+	novena_spl_setup_iomux_senoko();
 	novena_spl_setup_iomux_spi();
 	novena_spl_setup_iomux_uart();
 	novena_spl_setup_iomux_video();
