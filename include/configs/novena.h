@@ -18,7 +18,6 @@
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DOS_PARTITION
 #define CONFIG_FAT_WRITE
-#define CONFIG_FIT
 #define CONFIG_KEYBOARD
 #define CONFIG_MXC_GPIO
 #define CONFIG_OF_LIBFDT
@@ -44,6 +43,7 @@
 #define CONFIG_CMD_FS_GENERIC
 #define CONFIG_CMD_I2C
 #define CONFIG_CMD_FUSE
+#define CONFIG_CMD_GPIO
 #define CONFIG_CMD_MII
 #define CONFIG_CMD_MMC
 #define CONFIG_CMD_NET
@@ -90,10 +90,10 @@
 #endif
 
 /* Booting Linux */
-#define CONFIG_BOOTDELAY		5
+#define CONFIG_BOOTDELAY		0
 #define CONFIG_BOOTFILE			"fitImage"
 #define CONFIG_BOOTARGS			"console=ttymxc1,115200 "
-#define CONFIG_BOOTCOMMAND		"run net_nfs"
+#define CONFIG_BOOTCOMMAND		"run novena_boot"
 #define CONFIG_LOADADDR			0x18000000
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
 #define CONFIG_HOSTNAME			novena
@@ -251,7 +251,9 @@
 	"bootdev=/dev/mmcblk0p1\0"					\
 	"rootdev=/dev/mmcblk0p2\0"					\
 	"netdev=eth0\0"							\
-	"kernel_addr_r=0x18000000\0"					\
+	"kernel_addr_r=0x12000000\0"					\
+        "fdt_addr_r=0x11ff0000\0"					\
+        "initrd_addr_r=-\0"						\
 	"addcons="							\
 		"setenv bootargs ${bootargs} "				\
 		"console=${consdev},${baudrate}\0"			\
@@ -284,6 +286,83 @@
 	"net_nfs="							\
 		"run netload nfsargs addip addargs ; "			\
 		"bootm ${kernel_addr_r}\0"				\
+	"stdin=serial\0"						\
+	"stdout=serial\0"						\
+	"stderr=serial\0"						\
+	"bootargs=init=/lib/systemd/systemd rootwait rw\0"		\
+	"bootenv=uEnv.txt\0"						\
+        "loadbootenv=load ${bootsrc} ${bootdev} ${loadaddr} ${bootenv}\0" \
+	"importbootenv="						\
+		"echo Importing environment from ${bootsrc} ... ; "	\
+		"env import -t -r $loadaddr $filesize\0"		\
+	"rmlcd=fdt rm /soc/aips-bus@02000000/ldb@020e0008\0"		\
+	"novena_boot="							\
+		"if run loadbootenv; then "				\
+			"echo Loaded environment from ${bootenv} ; "	\
+			"run importbootenv ; "				\
+		"else ; "						\
+			"echo To override boot, create a file on the "	\
+				"internal MMC called ${bootenv} ; "	\
+		"fi ; "							\
+		"if test -n $earlyhook; then "				\
+			"echo Running earlyhook ... ; "			\
+			"run earlyhook ; "				\
+		"else ; "						\
+			"echo To hook early boot process, add a "	\
+				"variable called earlyhook ; "		\
+		"fi ; "							\
+		"if lcddet ; then "					\
+			"echo IT6251 bridge chip detected ; "		\
+			"setenv consdev tty0 ; "			\
+			"setenv rmlcd true ; "				\
+			"setenv video true ; "				\
+		"elif hdmidet ; then "					\
+			"echo HDMI monitor detected ; "			\
+			"setenv video true ; "				\
+		"else ; "						\
+			"echo No video detected, using serial port ; "	\
+			"setenv video false ; "				\
+		"fi ; "							\
+		"if gpio input 110 ; then " /* Test recovery button */  \
+			"if run video ; then "				\
+				"setenv stdout serial,vga ; "		\
+			"fi ; "						\
+			"echo Press Control-C to enter U-Boot shell, "	\
+				"or wait to enter recovery mode ; "	\
+			"if sleep 2 ; then true; else exit ; fi ; "	\
+			"echo Entering recovery mode... ; "		\
+			"setenv rec .recovery ;	"			\
+			"setenv bootargs ${bootargs} recovery ; "	\
+			"setenv rootdev PARTUUID=4e6f764d-03 ; " /* NovM */ \
+		"else ; "						\
+			"echo Hold recovery button to boot to "		\
+			"recovery, or to enter U-Boot shell. ; "	\
+		"fi ; "							\
+		"if run video ; then "					\
+			"setenv consdev tty0 ; "			\
+		"else ; "						\
+			"setenv consdev ${consdev},${baudrate} ; "	\
+		"fi ; "							\
+		"fatload ${bootsrc} ${bootdev} "			\
+			"${kernel_addr_r} zImage${rec} ; "		\
+		"fatload ${bootsrc} ${bootdev} "			\
+			"${fdt_addr_r} novena${rec}.dtb ; "		\
+		"fdt addr ${fdt_addr_r}	; "				\
+		"setenv bootargs ${bootargs} "				\
+			"root=${rootdev} "				\
+			"console=${consdev} ; "				\
+		"run rmlcd ; "						\
+		"if test -n $finalhook; then "				\
+			"echo Running finalhook ... ; "			\
+			"run finalhook ; "				\
+		"else ; "						\
+			"echo To hook late boot process, add "		\
+				"a variable called finalhook ; "	\
+		"fi ; "							\
+		"bootz ${kernel_addr_r} "				\
+			"${initrd_addr_r} "				\
+			"${fdt_addr_r} ; "				\
+		"\0"							\
 	"update_sd_spl_filename=SPL\0"					\
 	"update_sd_uboot_filename=u-boot.img\0"				\
 	"update_sd_firmware="	/* Update the SD firmware partition */	\
