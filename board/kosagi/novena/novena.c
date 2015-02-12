@@ -40,6 +40,65 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
+enum boot_device {
+	MX6_SD0_BOOT,
+	MX6_SD1_BOOT,
+	MX6_MMC_BOOT,
+	MX6_NAND_BOOT,
+	MX6_SATA_BOOT,
+	MX6_WEIM_NOR_BOOT,
+	MX6_ONE_NAND_BOOT,
+	MX6_PATA_BOOT,
+	MX6_I2C_BOOT,
+	MX6_SPI_NOR_BOOT,
+	MX6_UNKNOWN_BOOT,
+	MX6_BOOT_DEV_NUM = MX6_UNKNOWN_BOOT,
+};
+
+static enum boot_device get_boot_device(void)
+{
+	struct src *psrc = (struct src *)SRC_BASE_ADDR;
+	unsigned soc_sbmr = readl(&psrc->sbmr1);
+	uint bt_mem_ctl = (soc_sbmr & 0x000000FF) >> 4 ;
+	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
+	uint bt_mem_mmc = (soc_sbmr & 0x00001000) >> 12;
+
+	switch (bt_mem_ctl) {
+	case 0x0:
+		if (bt_mem_type)
+			return MX6_ONE_NAND_BOOT;
+		else
+			return MX6_WEIM_NOR_BOOT;
+		break;
+	case 0x2:
+			return MX6_SATA_BOOT;
+		break;
+	case 0x3:
+		if (bt_mem_type)
+			return MX6_I2C_BOOT;
+		else
+			return MX6_SPI_NOR_BOOT;
+		break;
+	case 0x4:
+	case 0x5:
+		if (bt_mem_mmc)
+			return MX6_SD0_BOOT;
+		else
+			return MX6_SD1_BOOT;
+		break;
+	case 0x6:
+	case 0x7:
+		return MX6_MMC_BOOT;
+		break;
+	case 0x8 ... 0xf:
+		return MX6_NAND_BOOT;
+		break;
+	default:
+		return MX6_UNKNOWN_BOOT;
+		break;
+	}
+}
+
 /*
  * GPIO button
  */
@@ -222,48 +281,98 @@ int power_init_board(void)
 }
 
 /* EEPROM configuration data */
-struct novena_eeprom_data {
+static struct novena_eeprom_data {
 	uint8_t		signature[6];
 	uint8_t		version;
 	uint8_t		reserved;
 	uint32_t	serial;
 	uint8_t		mac[6];
 	uint16_t	features;
-};
+} eeprom_data;
 
-int misc_init_r(void)
+static int is_valid_eeprom_data(void)
 {
-	struct novena_eeprom_data data;
-	uchar *datap = (uchar *)&data;
 	const char *signature = "Novena";
-	int ret;
 
+	/* Check EEPROM signature. */
+	return !memcmp(eeprom_data.signature, signature, 6);
+}
+
+static int set_bootdev(void)
+{
+	/* Set boot environment variables */
+	switch(get_boot_device()) {
+	case MX6_SD0_BOOT:
+		setenv("bootdev", "0");
+		setenv("bootsrc", "mmc");
+		break;
+
+	case MX6_SD1_BOOT:
+		setenv("bootdev", "1");
+		setenv("bootsrc", "mmc");
+		break;
+
+	case MX6_SATA_BOOT:
+		setenv("bootdev", "0");
+		setenv("bootsrc", "sata");
+		break;
+
+	default:
+		return 1;
+		break;
+ 	}
+ 
+	if (is_valid_eeprom_data() && (eeprom_data.features & 0x100))
+		setenv("rootdev", "PARTUUID=4e6f7653-03"); /* NovS */
+	else
+		setenv("rootdev", "PARTUUID=4e6f764d-03"); /* NovM */
+
+	return 0;
+}
+
+static int set_ethaddr(void)
+{
 	/* If 'ethaddr' is already set, do nothing. */
 	if (getenv("ethaddr"))
 		return 0;
+
+	/* Set ethernet address from EEPROM. */
+	if (is_valid_eeprom_data())
+		eth_setenv_enetaddr("ethaddr", eeprom_data.mac);
+
+	return 0;
+}
+
+static int read_eeprom(void)
+{
+	int ret;
 
 	/* EEPROM is at bus 2. */
 	ret = i2c_set_bus_num(2);
 	if (ret) {
 		puts("Cannot select EEPROM I2C bus.\n");
-		return 0;
+		return 1;
 	}
 
 	/* EEPROM is at address 0x56. */
-	ret = eeprom_read(0x56, 0, datap, sizeof(data));
+	ret = eeprom_read(0x56, 0, (void *)&eeprom_data, sizeof(eeprom_data));
 	if (ret) {
 		puts("Cannot read I2C EEPROM.\n");
-		return 0;
+		return ret;
 	}
 
-	/* Check EEPROM signature. */
-	if (memcmp(data.signature, signature, 6)) {
-		puts("Invalid I2C EEPROM signature.\n");
-		return 0;
-	}
+	if (!is_valid_eeprom_data())
+		puts("EEPROM is uninitialized\n");
+	return 0;
+}
 
-	/* Set ethernet address from EEPROM. */
-	eth_setenv_enetaddr("ethaddr", data.mac);
+int misc_init_r(void)
+{
+	int ret = 0;
+
+	read_eeprom();
+	ret |= set_bootdev();
+	ret |= set_ethaddr();
 
 	return ret;
 }
