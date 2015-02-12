@@ -454,3 +454,13 @@ void setup_display_lvds(void)
 		gpio_direction_output(NOVENA_BACKLIGHT_PWM_GPIO, 1);
 	}
 }
+
+static int do_lcddet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	return !it6251_ready();
+}
+
+U_BOOT_CMD(lcddet, 1, 1, do_lcddet,
+	"detect LCD panel",
+	""
+);
