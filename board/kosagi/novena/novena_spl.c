@@ -70,6 +70,64 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #define PC MUX_PAD_CTRL(I2C_PAD_CTRL)
 
+enum boot_device {
+	MX6_SD0_BOOT,
+	MX6_SD1_BOOT,
+	MX6_MMC_BOOT,
+	MX6_NAND_BOOT,
+	MX6_SATA_BOOT,
+	MX6_WEIM_NOR_BOOT,
+	MX6_ONE_NAND_BOOT,
+	MX6_PATA_BOOT,
+	MX6_I2C_BOOT,
+	MX6_SPI_NOR_BOOT,
+	MX6_UNKNOWN_BOOT,
+	MX6_BOOT_DEV_NUM = MX6_UNKNOWN_BOOT,
+};
+
+static enum boot_device get_boot_device(void)
+{
+	uint soc_sbmr = readl(SRC_BASE_ADDR + 0x4);
+	uint bt_mem_ctl = (soc_sbmr & 0x000000FF) >> 4 ;
+	uint bt_mem_type = (soc_sbmr & 0x00000008) >> 3;
+	uint bt_mem_mmc = (soc_sbmr & 0x00001000) >> 12;
+
+	switch (bt_mem_ctl) {
+	case 0x0:
+		if (bt_mem_type)
+			return MX6_ONE_NAND_BOOT;
+		else
+			return MX6_WEIM_NOR_BOOT;
+		break;
+	case 0x2:
+			return MX6_SATA_BOOT;
+		break;
+	case 0x3:
+		if (bt_mem_type)
+			return MX6_I2C_BOOT;
+		else
+			return MX6_SPI_NOR_BOOT;
+		break;
+	case 0x4:
+	case 0x5:
+		if (bt_mem_mmc)
+			return MX6_SD0_BOOT;
+		else
+			return MX6_SD1_BOOT;
+		break;
+	case 0x6:
+	case 0x7:
+		return MX6_MMC_BOOT;
+		break;
+	case 0x8 ... 0xf:
+		return MX6_NAND_BOOT;
+		break;
+	default:
+		return MX6_UNKNOWN_BOOT;
+		break;
+	}
+}
+
 /*
  * Audio
  */
@@ -408,8 +466,12 @@ static inline void novena_spl_setup_iomux_video(void) {}
  * SPL boots from uSDHC card
  */
 #ifdef CONFIG_FSL_ESDHC
-static struct fsl_esdhc_cfg usdhc_cfg = {
+static struct fsl_esdhc_cfg usdhc3_cfg = {
 	USDHC3_BASE_ADDR, 0, 4
+};
+
+static struct fsl_esdhc_cfg usdhc2_cfg = {
+	USDHC2_BASE_ADDR, 0, 4
 };
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -420,8 +482,29 @@ int board_mmc_getcd(struct mmc *mmc)
 
 int board_mmc_init(bd_t *bis)
 {
-	usdhc_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-	return fsl_esdhc_initialize(bis, &usdhc_cfg);
+	enum boot_device dev = get_boot_device();
+
+	/* Internal MMC */
+	switch (dev) {
+	case MX6_SD0_BOOT:	/* Internal SD card */
+		puts("Internal SD card\n");
+		usdhc3_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+		return fsl_esdhc_initialize(bis, &usdhc3_cfg);
+
+	case MX6_SD1_BOOT:	/* External SD card */
+		puts("External SD card\n");
+		usdhc2_cfg.sdhc_clk = mxc_get_clock(MXC_ESDHC2_CLK);
+		return fsl_esdhc_initialize(bis, &usdhc2_cfg);
+
+	case MX6_SATA_BOOT:
+		puts("Don't yet support booting from SATA\n");
+		hang();
+
+	default:
+		printf("Unrecognized boot source: %d\n", dev);
+		hang();
+	}
+	return 0;
 }
 #endif
 
