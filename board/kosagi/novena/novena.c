@@ -229,6 +229,11 @@ int board_init(void)
 	setup_sata();
 #endif
 
+#ifdef CONFIG_PCI
+	/* Power on the PCIe port to prevent kernel from locking up */
+	gpio_set_value(CONFIG_PCIE_IMX_POWER_GPIO, 1);
+#endif
+
 	return 0;
 }
 
