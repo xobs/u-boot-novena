@@ -18,6 +18,7 @@
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/imx-regs.h>
 #include <asm/arch/iomux.h>
+#include <asm/arch/mx6-pins.h>
 #include <asm/arch/mxc_hdmi.h>
 #include <asm/arch/sys_proto.h>
 #include <asm/imx-common/iomux-v3.h>
@@ -57,6 +58,14 @@
 #define IT6251_REG_PCLK_CNT_HIGH			0x58
 
 #define IT6521_RETRY_MAX				20
+
+static iomux_v3_cfg_t backlight_pads[] = {
+	/* PWR_GPIO */
+	MX6_PAD_KEY_ROW4__GPIO4_IO15 | MUX_PAD_CTRL(NO_PAD_CTRL),
+
+	/* PWM_GPIO */
+	MX6_PAD_DISP0_DAT8__GPIO4_IO29 | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
 
 static int it6251_is_stable(void)
 {
@@ -448,6 +457,11 @@ void setup_display_lvds(void)
 	/* Init the LVDS-to-eDP chip and if it succeeded, enable backlight. */
 	ret = it6251_init();
 	if (!ret) {
+
+		/* Ensure pins are muxed as GPIOs and not as PWM */
+		imx_iomux_v3_setup_multiple_pads(backlight_pads,
+						 ARRAY_SIZE(backlight_pads));
+
 		/* Backlight power enable. */
 		gpio_direction_output(NOVENA_BACKLIGHT_PWR_GPIO, 1);
 		/* PWM backlight pin, always on for full brightness. */
