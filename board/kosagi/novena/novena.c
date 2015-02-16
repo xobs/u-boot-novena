@@ -232,6 +232,14 @@ int board_init(void)
 #ifdef CONFIG_PCI
 	/* Power on the PCIe port to prevent kernel from locking up */
 	gpio_set_value(CONFIG_PCIE_IMX_POWER_GPIO, 1);
+
+	/* Enable reset */
+	gpio_set_value(CONFIG_PCIE_IMX_PERST_GPIO, 0);
+
+	/* Enable the port (turn off rfkill) */
+	gpio_set_value(CONFIG_PCIE_IMX_RFKILL_GPIO, 1);
+#else
+#error "PCI is not configured"
 #endif
 
 	return 0;
