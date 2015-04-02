@@ -238,8 +238,6 @@ int board_init(void)
 
 	/* Enable the port (turn off rfkill) */
 	gpio_set_value(CONFIG_PCIE_IMX_RFKILL_GPIO, 1);
-#else
-#error "PCI is not configured"
 #endif
 
 	return 0;
