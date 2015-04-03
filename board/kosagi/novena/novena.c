@@ -271,6 +271,9 @@ int board_init(void)
 
 	/* Enable the port (turn off rfkill) */
 	gpio_set_value(CONFIG_PCIE_IMX_RFKILL_GPIO, 1);
+#else
+	struct iomuxc *iomuxc_regs = (struct iomuxc *)IOMUXC_BASE_ADDR;
+	clrbits_le32(&iomuxc_regs->gpr[1], IOMUXC_GPR1_REF_SSP_EN);
 #endif
 
 	return 0;
