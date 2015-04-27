@@ -400,6 +400,75 @@ static int is_valid_eeprom_data(void)
 	return !memcmp(eeprom_data.signature, signature, 6);
 }
 
+#if defined(CONFIG_OF_BOARD_SETUP) && defined(CONFIG_OF_LIBFDT)
+#include <libfdt.h>
+static int fdt_del_by_path(void *fdt, const char *path)
+{
+        int  nodeoffset;        /* node offset from libfdt */
+        int  err;
+
+        /*
+         * Get the path.  The root node is an oddball, the offset
+         * is zero and has no name.
+         */
+        nodeoffset = fdt_path_offset(working_fdt, path);
+        if (nodeoffset < 0) {
+                /*
+                 * Not found or something else bad happened.
+                 */
+                printf ("libfdt fdt_path_offset() returned %s\n",
+                        fdt_strerror(nodeoffset));
+                return 1;
+        }
+
+        err = fdt_del_node(working_fdt, nodeoffset);
+        if (err < 0) {
+                printf("libfdt fdt_del_by_path():  %s\n",
+                fdt_strerror(err));
+                return err;
+        }
+
+        return 0;
+}
+
+int ft_board_setup(void *blob, bd_t *bd)
+{
+	if (!is_valid_eeprom_data())
+		return 0;
+
+	if (getenv("rec")) {
+		puts("Detected recovery mode, leaving everything enabled\n");
+		return 0;
+	}
+
+        if (!(eeprom_data.features & feature_es8328))
+                fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/es8328@11");
+
+        if (!(eeprom_data.features & feature_senoko)) {
+                fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a0000/bq20z75@0b");
+                fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@02100000/senoko@20");
+        }
+
+        if (!(eeprom_data.features & feature_pcie))
+                fdt_del_by_path(blob, "/soc/pcie@0x01000000");
+
+        if (!(eeprom_data.features & feature_gbit))
+                fdt_del_by_path(blob, "/soc/aips-bus@02100000/ethernet@02188000");
+
+        if (!(eeprom_data.features & feature_retina)) {
+                fdt_del_by_path(blob, "/soc/aips-bus@02000000/ldb@020e0008");
+                fdt_del_by_path(blob, "/soc/aips-bus@02100000/i2c@021a8000/it6251@5c");
+        }
+
+	if (!(eeprom_data.features & feature_heirloom)) {
+                fdt_del_by_path(blob, "/gpio-fan");
+                fdt_del_by_path(blob, "/thermal-zones/cpu-thermal/cooling-maps/map0");
+        }
+
+	return 0;
+}
+#endif
+
 static int set_bootdev(void)
 {
 	/* Set boot environment variables */
