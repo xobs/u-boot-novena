@@ -25,6 +25,9 @@
 #define CONFIG_SYS_GENERIC_BOARD
 #define CONFIG_SYS_NO_FLASH
 
+#define CONFIG_NOVENA_LID_FEATURE
+#define CONFIG_NOVENA_LID_GPIO		IMX_GPIO_NR(4, 12)
+
 #include "configs/mx6_common.h"
 #include <asm/arch/imx-regs.h>
 #include <asm/imx-common/gpio.h>
