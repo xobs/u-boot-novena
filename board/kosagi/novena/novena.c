@@ -13,6 +13,7 @@
 #include <asm/arch/clock.h>
 #include <asm/arch/crm_regs.h>
 #include <asm/arch/imx-regs.h>
+#include <asm/arch/mx6-pins.h>
 #include <asm/arch/iomux.h>
 #include <asm/arch/mxc_hdmi.h>
 #include <asm/arch/sys_proto.h>
@@ -327,6 +328,46 @@ int power_init_board(void)
 	return 0;
 }
 
+#if defined(CONFIG_NOVENA_LID_FEATURE)
+static int power_off_if_lid_shut(void)
+{
+	int ret;
+	uchar buffer[1];
+	int tries;
+
+	iomux_v3_cfg_t lid_switch_pads[] = {
+		/* Lid Switch */
+		MX6_PAD_KEY_COL3__GPIO4_IO12 | MUX_PAD_CTRL(NO_PAD_CTRL),
+	};
+
+	imx_iomux_v3_setup_multiple_pads(lid_switch_pads,
+					 ARRAY_SIZE(lid_switch_pads));
+
+	gpio_direction_input(CONFIG_NOVENA_LID_GPIO);
+
+	if (gpio_get_value(CONFIG_NOVENA_LID_GPIO))
+		return 0;
+
+	/* Power off, as the lid is shut */
+	ret = i2c_set_bus_num(0);
+	if (ret) {
+		printf("Cannot select Senoko I2C bus.\n");
+		return 1;
+	}
+
+	for (tries = 1; tries <= 10; tries++) {
+		buffer[0] = 0x81;
+		ret = i2c_write(0x20, 0x0f, 1, buffer, sizeof(buffer));
+
+		if (ret)
+			printf("Cannot power off senoko (try %d/10)\n", tries);
+		mdelay(100);
+	}
+
+	return 1;
+}
+#endif /* CONFIG_NOVENA_LID_FEATURE */
+
 /* EEPROM configuration data */
 static struct novena_eeprom_data {
 	uint8_t		signature[6];
@@ -336,6 +377,20 @@ static struct novena_eeprom_data {
 	uint8_t		mac[6];
 	uint16_t	features;
 } eeprom_data;
+
+enum feature_flags {
+	feature_es8328          = 0x0001,
+	feature_senoko          = 0x0002,
+	feature_retina          = 0x0004,
+	feature_pixelqi         = 0x0008,
+	feature_pcie            = 0x0010,
+	feature_gbit            = 0x0020,
+	feature_hdmi            = 0x0040,
+	feature_eepromoops      = 0x0080,
+	feature_rootsrc_sata    = 0x0100,
+	feature_heirloom        = 0x0200,
+	feature_lidbootblock    = 0x0400,
+};
 
 static int is_valid_eeprom_data(void)
 {
@@ -408,8 +463,11 @@ static int read_eeprom(void)
 		return ret;
 	}
 
-	if (!is_valid_eeprom_data())
+	if (!is_valid_eeprom_data()) {
 		puts("EEPROM is uninitialized\n");
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -417,7 +475,13 @@ int misc_init_r(void)
 {
 	int ret = 0;
 
-	read_eeprom();
+	if (!read_eeprom()) {
+#if defined(CONFIG_NOVENA_LID_FEATURE)
+		if (eeprom_data.features & feature_lidbootblock)
+			power_off_if_lid_shut();
+#endif /* CONFIG_NOVENA_LID_FEATURE */
+	}
+
 	ret |= set_bootdev();
 	ret |= set_ethaddr();
 
