@@ -1,3 +1,10 @@
+u-boot-novena (2014.10-novena-rc16) unstable; urgency=medium
+
+  * Add lidbootblock support
+  * Add feature flag support
+
+ -- Sean Cross <xobs@kosagi.com>  Mon, 27 Apr 2015 12:55:52 +0800
+
 u-boot-novena (2014.10-novena-rc15) unstable; urgency=medium
 
   * Rebase to newest version of U-Boot
