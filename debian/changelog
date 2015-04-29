@@ -1,3 +1,9 @@
+u-boot-novena (2014.10-novena-rc17) unstable; urgency=medium
+
+  * Fix feature flag paths
+
+ -- Sean Cross <xobs@kosagi.com>  Wed, 29 Apr 2015 11:16:03 +0800
+
 u-boot-novena (2014.10-novena-rc16) unstable; urgency=medium
 
   * Add lidbootblock support
