@@ -484,7 +484,7 @@ static int set_bootdev(void)
 		break;
  	}
  
-	if (is_valid_eeprom_data() && (eeprom_data.features & 0x100))
+	if (is_valid_eeprom_data() && (eeprom_data.features & feature_rootsrc_sata))
 		setenv("rootdev", "PARTUUID=4e6f7653-03"); /* NovS */
 	else
 		setenv("rootdev", "PARTUUID=4e6f764d-03"); /* NovM */
