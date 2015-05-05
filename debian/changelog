@@ -1,4 +1,4 @@
-u-boot-novena (2014.10-novena-rc17) unstable; urgency=medium
+u-boot-novena (2014.10-novena-r2-rc17) unstable; urgency=medium
 
   * Fix feature flag paths
 
