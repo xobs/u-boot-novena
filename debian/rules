@@ -21,7 +21,7 @@ override_dh_auto_build:
 	mkdir -p $$builddir; \
 	mkdir -p $$builddir/etc/kernel/postinst.d; \
 	$(MAKE) O=$$builddir novena_config; \
-	$(MAKE) -j O=$$builddir; \
+	$(MAKE) -j4 O=$$builddir; \
 	install -m 644 $$builddir/u-boot.img $$builddir/u-boot.img; \
 	install -m 644 $$builddir/SPL $$builddir/u-boot.spl; \
 	install -m 755 debian/novena-kernel-install-postinst $$builddir/zz-novena-kernel-install; \
