@@ -88,10 +88,10 @@ static int it6251_is_stable(void)
 		  0x0f00);
 	debug("Clock: 0x%02x\n", clkcnt);
 
-	refstate = i2c_reg_read(laddr, IT6251_REF_STATE);
+	refstate = i2c_reg_read(caddr, IT6251_REF_STATE);
 	debug("Ref Link State: 0x%02x\n", refstate);
 
-	if ((refstate & 0x1f) != 0)
+	if ((refstate & IT6251_REF_STATE_NORMAL_OPERATION) == 0)
 		return 0;
 
 	/* If video is muted, that's a failure */
