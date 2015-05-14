@@ -1,3 +1,9 @@
+u-boot-novena (2014.10.r3-novena) unstable; urgency=medium
+
+  * Enable DeSSC on eDP chip, to improve stability
+
+ -- Sean Cross <xobs@kosagi.com>  Thu, 14 May 2015 13:52:41 +0800
+
 u-boot-novena (2014.10-novena-r2-rc17) unstable; urgency=medium
 
   * Fix feature flag paths
