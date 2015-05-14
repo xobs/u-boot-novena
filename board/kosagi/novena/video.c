@@ -145,13 +145,13 @@ static void it6251_program_regs(void)
 	i2c_reg_write(laddr, 0x3b, 0x42);
 	i2c_reg_write(laddr, 0x3b, 0x43);
 
-	/* something with SSC PLL */
-	i2c_reg_write(laddr, 0x3c, 0x08);
+	/* Enable DeSSC PLL */
+	i2c_reg_write(laddr, 0x3c, 0x0f);
 	/* don't swap links, but writing reserved registers */
 	i2c_reg_write(laddr, 0x0b, 0x88);
 
-	/* JEIDA, 8-bit depth  0x11, orig 0x42 */
-	i2c_reg_write(laddr, 0x2c, 0x01);
+	/* JEIDA, 8-bit depth, DeSSC enabled */
+	i2c_reg_write(laddr, 0x2c, 0x41);
 	/* "reserved" */
 	i2c_reg_write(laddr, 0x32, 0x04);
 	/* "reserved" */
