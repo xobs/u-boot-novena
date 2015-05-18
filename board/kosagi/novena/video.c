@@ -87,8 +87,6 @@ static int it6251_is_stable(void)
 		 ((i2c_reg_read(laddr, IT6251_REG_PCLK_CNT_HIGH) << 8) &
 		  0x0f00);
 	debug("Clock: 0x%02x\n", clkcnt);
-        if ((clkcnt < 0x180) || (clkcnt > 0x1a0))
-                return 0;
 
 	refstate = i2c_reg_read(caddr, IT6251_REF_STATE);
 	debug("Ref Link State: 0x%02x\n", refstate);
