@@ -29,6 +29,8 @@
 #define CONFIG_NOVENA_LID_FEATURE
 #define CONFIG_NOVENA_LID_GPIO		IMX_GPIO_NR(4, 12)
 
+#define CONFIG_DDR_SPD
+
 #include "configs/mx6_common.h"
 #include <asm/arch/imx-regs.h>
 #include <asm/imx-common/gpio.h>
