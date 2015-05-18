@@ -9,6 +9,16 @@ if [ "$1" = configure ] ; then
 	do
                 cp /usr/share/${pkg}/${file} /boot/${file}
 	done
+
+	if grep -q root=PARTUUID=4e6f7653-03 /proc/cmdline
+	then
+		/usr/sbin/novena-install-spl
+	fi
+
+	if grep -q root=PARTUUID=4e6f764d-03 /proc/cmdline
+	then
+		/usr/sbin/novena-install-spl
+	fi
 fi
 #DEBHELPER#
 exit 0
