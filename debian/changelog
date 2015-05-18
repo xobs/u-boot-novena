@@ -1,3 +1,10 @@
+u-boot-novena (2014.10.r4-novena) unstable; urgency=medium
+
+  * Use default SPD, if the checksum doesn't match
+  * Disable DeSSC, as it wasn't working
+
+ -- Sean Cross <xobs@kosagi.com>  Mon, 18 May 2015 18:12:19 +0800
+
 u-boot-novena (2014.10.r3-novena) unstable; urgency=medium
 
   * Enable DeSSC on eDP chip, to improve stability
