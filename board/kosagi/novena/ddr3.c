@@ -34,6 +34,8 @@
 #include <i2c.h>
 #include <ddr_spd.h>
 
+#include "spd.h"
+
 /* Required because mx6-ddr.h doesn't include this when building for SPL */
 #ifdef CONFIG_MX6Q
 #include <asm/arch/mx6q-ddr.h>
@@ -819,6 +821,11 @@ uint32_t novena_read_spd(struct mx6_ddr_sysinfo *sysinfo,
 	if (ret != 0) {
 		printf("Error reading SPD on DDR3.\n");
 		dram_fatal(-ret);
+	}
+
+	if (ddr3_spd_check(&spd)) {
+		printf("Using canned SPD\n");
+		memcpy((void *)&spd, default_spd, sizeof(spd));
 	}
 
 	switch (spd.tck_min) {
