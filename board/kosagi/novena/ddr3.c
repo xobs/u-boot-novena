@@ -819,8 +819,9 @@ uint32_t novena_read_spd(struct mx6_ddr_sysinfo *sysinfo,
 
 	ret = i2c_read(chip, addr, alen, (uint8_t *)&spd, sizeof(spd));
 	if (ret != 0) {
-		printf("Error reading SPD on DDR3.\n");
-		dram_fatal(-ret);
+		printf("Error reading SPD on DDR3: %d\n", ret);
+		printf("Using canned SPD instead.\n");
+		memcpy((void *)&spd, default_spd, sizeof(spd));
 	}
 
 	if (ddr3_spd_check(&spd)) {
