@@ -75,9 +75,25 @@ static int it6251_is_stable(void)
 	int clkcnt;
 	int rpclkcnt;
 	int refstate;
+	int reg;
+
+	/* start new count */
+	reg = i2c_reg_read(caddr, 0x12);
+	reg |= 0x80;
+	i2c_reg_write(caddr, 0x12, reg);
+	mdelay(1);
+	reg &= 0x7f;
+	i2c_reg_write(caddr, 0x12, reg);
 
 	rpclkcnt = (i2c_reg_read(caddr, 0x13) & 0xff) |
 		   ((i2c_reg_read(caddr, 0x14) << 8) & 0x0f00);
+
+	/* a count of 512 seems to indicate no clock is detected at all */
+	if (rpclkcnt == 512) {
+		debug(".");
+		return 0;
+	}
+
 	debug("RPCLKCnt: %d\n", rpclkcnt);
 
 	status = i2c_reg_read(caddr, IT6251_SYSTEM_STATUS);
@@ -126,6 +142,8 @@ static void it6251_program_regs(void)
 	const unsigned int caddr = NOVENA_IT6251_CHIPADDR;
 	const unsigned int laddr = NOVENA_IT6251_LVDSADDR;
 
+	/* reset DP */
+	i2c_reg_write(caddr, 0x05, 0xff);
 	i2c_reg_write(caddr, 0x05, 0x00);
 	mdelay(1);
 
@@ -145,12 +163,12 @@ static void it6251_program_regs(void)
 	i2c_reg_write(laddr, 0x3b, 0x42);
 	i2c_reg_write(laddr, 0x3b, 0x43);
 
-	/* something with SSC PLL */
-	i2c_reg_write(laddr, 0x3c, 0x08);
+	/* Enable DeSSC */
+	i2c_reg_write(laddr, 0x3c, 0x0f);
 	/* don't swap links, but writing reserved registers */
 	i2c_reg_write(laddr, 0x0b, 0x88);
 
-	/* JEIDA, 8-bit depth  0x11, orig 0x42 */
+	/* JEIDA, 8-bit depth  0x11, orig 0x42 enable DeCSS*/
 	i2c_reg_write(laddr, 0x2c, 0x01);
 	/* "reserved" */
 	i2c_reg_write(laddr, 0x32, 0x04);
@@ -227,6 +245,7 @@ static void it6251_program_regs(void)
 	i2c_reg_write(caddr, 0x1a, 0xff);
 
 	/* start link training */
+	i2c_reg_write(caddr, 0x17, 0x04);
 	i2c_reg_write(caddr, 0x17, 0x01);
 }
 
@@ -242,6 +261,22 @@ static int it6251_init(void)
 
 		/* Wait for video stable. */
 		for (tries = 0; tries < 100; tries++) {
+			mdelay(5);
+			/* Check interrupt status and clear it if set */
+			reg = i2c_reg_read(caddr, 0x06);
+			if (reg != 0) {
+				i2c_reg_write(caddr, 0x06, reg);
+				debug("Intr 0x06 state = %02x\n",reg);
+			}
+			reg = i2c_reg_read(caddr, 0x0e);
+			if ((reg & 0x1f) != 0x10) {
+				/* restart link training */
+				debug("Restart link training\n");
+				i2c_reg_write(caddr, 0x05, 0x00);
+				i2c_reg_write(caddr, 0x17, 0x04);
+				i2c_reg_write(caddr, 0x17, 0x01);
+				continue;
+			}
 			reg = i2c_reg_read(caddr, 0x17);
 			/* Test Link CFG, STS, LCS read done. */
 			if ((reg & 0xe0) != 0xe0) {
