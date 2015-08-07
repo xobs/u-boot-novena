@@ -40,6 +40,7 @@
 #define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_CACHE
 #define CONFIG_CMD_DHCP
+#define CONFIG_CMD_PXE
 #define CONFIG_CMD_EEPROM
 #define CONFIG_CMD_EXT4
 #define CONFIG_CMD_EXT4_WRITE
@@ -57,6 +58,7 @@
 #define CONFIG_CMD_TIME
 #define CONFIG_CMD_USB
 #define CONFIG_VIDEO
+#define CONFIG_MENU
 
 /* U-Boot general configurations */
 #define CONFIG_SYS_LONGHELP
@@ -246,8 +248,12 @@
 #define CONFIG_IMX_VIDEO_SKIP
 #endif
 
+#define BOOT_TARGET_DEVICES(func)
+#include "config_distro_bootcmd.h"
+
 /* Extra U-Boot environment. */
 #define CONFIG_EXTRA_ENV_SETTINGS					\
+	BOOTENV								\
 	"fdt_high=0xffffffff\0"						\
 	"initrd_high=0xffffffff\0"					\
 	"consdev=ttymxc1\0"						\
@@ -255,9 +261,13 @@
 	"bootdev=/dev/mmcblk0p1\0"					\
 	"rootdev=/dev/mmcblk0p2\0"					\
 	"netdev=eth0\0"							\
+	"fdtfile=imx6q-novena.dtb\0"					\
 	"kernel_addr_r=0x12000000\0"					\
-        "fdt_addr_r=0x11ff0000\0"					\
-        "initrd_addr_r=-\0"						\
+	"fdt_addr_r=0x11ff0000\0"					\
+	"ramdisk_addr_r=0x10ff0000\0"					\
+	"scriptaddr=0x10aa0000\0"					\
+	"pxe_addr_r=0x10550000\0"					\
+	"initrd_addr_r=-\0"						\
 	"addcons="							\
 		"setenv bootargs ${bootargs} "				\
 		"console=${consdev},${baudrate}\0"			\
@@ -347,6 +357,11 @@
 		"else ; "						\
 			"setenv consdev ${consdev},${baudrate} ; "	\
 		"fi ; "							\
+		"sata init ; "						\
+		"setenv devtype sata ; "				\
+		"setenv devnum 0 ; "					\
+		"setenv bootpart 1 ; "					\
+		"run scan_dev_for_boot ; " 				\
 		"fatload ${bootsrc} ${bootdev} "			\
 			"${kernel_addr_r} zImage${rec} ; "		\
 		"fatload ${bootsrc} ${bootdev} "			\
