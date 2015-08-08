@@ -356,7 +356,6 @@
 		"else ; "						\
 			"setenv consdev ${consdev},${baudrate} ; "	\
 		"fi ; "							\
-		"sata init ; "						\
 		"setenv devtype sata ; "				\
 		"setenv devnum 0 ; "					\
 		"setenv bootpart 1 ; "					\
