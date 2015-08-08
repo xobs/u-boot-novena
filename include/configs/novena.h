@@ -97,7 +97,7 @@
 /* Booting Linux */
 #define CONFIG_BOOTDELAY		0
 #define CONFIG_BOOTFILE			"fitImage"
-#define CONFIG_BOOTARGS			"console=ttymxc1,115200 "
+#define CONFIG_BOOTARGS			""
 #define CONFIG_BOOTCOMMAND		"run novena_boot"
 #define CONFIG_LOADADDR			0x18000000
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
@@ -256,7 +256,6 @@
 	BOOTENV								\
 	"fdt_high=0xffffffff\0"						\
 	"initrd_high=0xffffffff\0"					\
-	"consdev=ttymxc1\0"						\
 	"baudrate=115200\0"						\
 	"bootdev=/dev/mmcblk0p1\0"					\
 	"rootdev=/dev/mmcblk0p2\0"					\
@@ -327,7 +326,6 @@
 		"fi ; "							\
 		"if lcddet ; then "					\
 			"echo IT6251 bridge chip detected ; "		\
-			"setenv consdev tty0 ; "			\
 			"setenv keep_lcd true ; "			\
 			"setenv video true ; "				\
 		"elif hdmidet ; then "					\
@@ -338,9 +336,6 @@
 			"setenv video false ; "				\
 		"fi ; "							\
 		"if gpio input 110 ; then " /* Test recovery button */  \
-			"if run video ; then "				\
-				"setenv stdout serial,vga ; "		\
-			"fi ; "						\
 			"echo Press Control-C to enter U-Boot shell, "	\
 				"or wait to enter recovery mode ; "	\
 			"if sleep 2 ; then true; else exit ; fi ; "	\
@@ -352,9 +347,9 @@
 			"recovery, or to enter U-Boot shell. ; "	\
 		"fi ; "							\
 		"if run video ; then "					\
-			"setenv consdev tty0 ; "			\
+			"setenv console-bootarg tty0 ; "			\
 		"else ; "						\
-			"setenv consdev ${consdev},${baudrate} ; "	\
+			"setenv console-bootarg ttymxc1,${baudrate} ; "	\
 		"fi ; "							\
 		"if test -n \"${sata_boot}\" && test -z \"${rec}\"; then "	\
 			"sata init ; "					\
@@ -373,8 +368,7 @@
 			"${fdt_addr_r} novena${rec}.dtb ; "		\
 		"fdt addr ${fdt_addr_r}	; "				\
 		"setenv bootargs ${bootargs} "				\
-			"root=${rootdev} "				\
-			"console=${consdev} ; "				\
+			"root=${rootdev} ; "				\
 		"if test -n $finalhook; then "				\
 			"echo Running finalhook ... ; "			\
 			"run finalhook ; "				\
