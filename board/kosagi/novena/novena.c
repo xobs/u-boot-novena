@@ -427,6 +427,9 @@ int ft_board_setup(void *blob, bd_t *bd)
 	if (!is_valid_eeprom_data())
 		return 0;
 
+	if (!getenv("keep_lcd"))
+		fdt_del_by_path(blob, "/soc/aips-bus@02000000/ldb@020e0008");
+
 	if (getenv("rec")) {
 		puts("Detected recovery mode, leaving everything enabled\n");
 		return 0;
