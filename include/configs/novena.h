@@ -309,6 +309,7 @@
 	"importbootenv="						\
 		"echo Importing environment from ${bootsrc} ... ; "	\
 		"env import -t -r $loadaddr $filesize\0"		\
+	"rootdev=PARTUUID=4e6f764d-03\0" /* NovM */			\
 	"novena_boot="							\
 		"if run loadbootenv; then "				\
 			"echo Loaded environment from ${bootenv} ; "	\
@@ -346,7 +347,6 @@
 			"echo Entering recovery mode... ; "		\
 			"setenv rec .recovery ;	"			\
 			"setenv bootargs ${bootargs} recovery ; "	\
-			"setenv rootdev PARTUUID=4e6f764d-03 ; " /* NovM */ \
 		"else ; "						\
 			"echo Hold recovery button to boot to "		\
 			"recovery, or to enter U-Boot shell. ; "	\
@@ -356,8 +356,15 @@
 		"else ; "						\
 			"setenv consdev ${consdev},${baudrate} ; "	\
 		"fi ; "							\
-		"setenv devtype sata ; "				\
-		"setenv devnum 0 ; "					\
+		"if test -n \"${sata_boot}\" && test -z \"${rec}\"; then "	\
+			"sata init ; "					\
+			"setenv devtype sata ; "			\
+			"setenv devnum 0 ; "				\
+			"setenv rootdev PARTUUID=4e6f7653-03 ; " /* NovS */ \
+		"else ; "						\
+			"setenv devtype ${bootsrc} ; "			\
+			"setenv devnum ${bootdev} ; "			\
+		"fi ; "							\
 		"setenv bootpart 1 ; "					\
 		"run scan_dev_for_boot ; " 				\
 		"fatload ${bootsrc} ${bootdev} "			\
