@@ -309,6 +309,7 @@
 		"echo Importing environment from ${bootsrc} ... ; "	\
 		"env import -t -r $loadaddr $filesize\0"		\
 	"rootdev=PARTUUID=4e6f764d-03\0" /* NovM */			\
+	"bootpart=1\0"							\
 	"novena_boot="							\
 		"if run loadbootenv; then "				\
 			"echo Loaded environment from ${bootenv} ; "	\
@@ -360,13 +361,6 @@
 			"setenv devtype ${bootsrc} ; "			\
 			"setenv devnum ${bootdev} ; "			\
 		"fi ; "							\
-		"setenv bootpart 1 ; "					\
-		"run scan_dev_for_boot ; " 				\
-		"fatload ${bootsrc} ${bootdev} "			\
-			"${kernel_addr_r} zImage${rec} ; "		\
-		"fatload ${bootsrc} ${bootdev} "			\
-			"${fdt_addr_r} novena${rec}.dtb ; "		\
-		"fdt addr ${fdt_addr_r}	; "				\
 		"setenv bootargs ${bootargs} "				\
 			"root=${rootdev} ; "				\
 		"if test -n $finalhook; then "				\
@@ -376,6 +370,12 @@
 			"echo To hook late boot process, add "		\
 				"a variable called finalhook ; "	\
 		"fi ; "							\
+		"run scan_dev_for_boot ; " 				\
+		"fatload ${bootsrc} ${bootdev} "			\
+			"${kernel_addr_r} zImage${rec} ; "		\
+		"fatload ${bootsrc} ${bootdev} "			\
+			"${fdt_addr_r} novena${rec}.dtb ; "		\
+		"fdt addr ${fdt_addr_r}	; "				\
 		"bootz ${kernel_addr_r} "				\
 			"${initrd_addr_r} "				\
 			"${fdt_addr_r} ; "				\
