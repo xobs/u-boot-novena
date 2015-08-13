@@ -299,9 +299,9 @@
 	"net_nfs="							\
 		"run netload nfsargs addip addargs ; "			\
 		"bootm ${kernel_addr_r}\0"				\
-	"stdin=serial\0"						\
-	"stdout=serial\0"						\
-	"stderr=serial\0"						\
+	"stdin=serial,usbkbd\0"						\
+	"stdout=serial,vga\0"						\
+	"stderr=serial,vga\0"						\
 	"bootargs=init=/lib/systemd/systemd rootwait rw\0"		\
 	"bootenv=uEnv.txt\0"						\
         "loadbootenv=load ${bootsrc} ${bootdev} ${loadaddr} ${bootenv}\0" \
@@ -361,6 +361,7 @@
 			"setenv devtype ${bootsrc} ; "			\
 			"setenv devnum ${bootdev} ; "			\
 		"fi ; "							\
+		"setenv boot_extlinux \"usb start; ${boot_extlinux} ;\"" \
 		"setenv bootargs ${bootargs} "				\
 			"root=${rootdev} ; "				\
 		"if test -n $finalhook; then "				\
