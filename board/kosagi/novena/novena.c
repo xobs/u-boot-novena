@@ -422,10 +422,56 @@ static int fdt_del_by_path(void *fdt, const char *path)
 	return 0;
 }
 
+static int add_console_arg(void *fdt, char* arg)
+{
+	int nodeoffset = fdt_subnode_offset(fdt, 0, "chosen");
+	if (nodeoffset < 0)
+		return nodeoffset;
+
+	int argerr;
+	const struct fdt_property* args;
+	args = fdt_get_property(fdt, nodeoffset, "bootargs", &argerr);
+	if (argerr < 0)
+		return argerr;
+
+	const char* bootargs = args->data;
+	const char* mid = " console=";
+	char finalbootargs[CONFIG_SYS_CBSIZE];
+
+	int newlen = strlen(bootargs) + strlen(mid) + strlen(arg);
+	if (newlen > sizeof(finalbootargs)) {
+		printf("finalbootarg overflow %zd+%zd+%zd+1 > %zd\n",
+						strlen(bootargs), strlen(mid), strlen(arg), sizeof(finalbootargs));
+		return 0;
+	}
+
+	strcpy(finalbootargs, bootargs);
+	strcat(finalbootargs, mid);
+	strcat(finalbootargs, arg);
+
+	int err = fdt_setprop(fdt, nodeoffset, "bootargs", finalbootargs, newlen + 1);
+	if (err < 0)
+		return err;
+
+	return 0;
+}
+
 int ft_board_setup(void *blob, bd_t *bd)
 {
 	if (!is_valid_eeprom_data())
 		return 0;
+
+	if (!getenv("keep_lcd"))
+		fdt_del_by_path(blob, "/soc/aips-bus@02000000/ldb@020e0008");
+
+	char* console = getenv("console-bootarg");
+	if (console) {
+		int err = add_console_arg(blob, console);
+		if (err < 0) {
+			printf("WARNING: could not add console bootarg %s.\n",
+							fdt_strerror(err));
+		}
+	}
 
 	if (getenv("rec")) {
 		puts("Detected recovery mode, leaving everything enabled\n");
@@ -485,9 +531,7 @@ static int set_bootdev(void)
  	}
  
 	if (is_valid_eeprom_data() && (eeprom_data.features & feature_rootsrc_sata))
-		setenv("rootdev", "PARTUUID=4e6f7653-03"); /* NovS */
-	else
-		setenv("rootdev", "PARTUUID=4e6f764d-03"); /* NovM */
+		setenv("sata_boot", "yes");
 
 	return 0;
 }
