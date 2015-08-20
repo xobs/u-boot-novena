@@ -42,6 +42,7 @@
 #define CONFIG_CMD_BOOTZ
 #define CONFIG_CMD_CACHE
 #define CONFIG_CMD_DHCP
+#define CONFIG_CMD_PXE
 #define CONFIG_CMD_EEPROM
 #define CONFIG_CMD_EXT4
 #define CONFIG_CMD_EXT4_WRITE
@@ -59,6 +60,7 @@
 #define CONFIG_CMD_TIME
 #define CONFIG_CMD_USB
 #define CONFIG_VIDEO
+#define CONFIG_MENU
 
 /* U-Boot general configurations */
 #define CONFIG_SYS_LONGHELP
@@ -97,7 +99,7 @@
 /* Booting Linux */
 #define CONFIG_BOOTDELAY		0
 #define CONFIG_BOOTFILE			"fitImage"
-#define CONFIG_BOOTARGS			"console=ttymxc1,115200 "
+#define CONFIG_BOOTARGS			""
 #define CONFIG_BOOTCOMMAND		"run novena_boot"
 #define CONFIG_LOADADDR			0x18000000
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
@@ -248,18 +250,25 @@
 #define CONFIG_IMX_VIDEO_SKIP
 #endif
 
+#define BOOT_TARGET_DEVICES(func)
+#include "config_distro_bootcmd.h"
+
 /* Extra U-Boot environment. */
 #define CONFIG_EXTRA_ENV_SETTINGS					\
+	BOOTENV								\
 	"fdt_high=0xffffffff\0"						\
 	"initrd_high=0xffffffff\0"					\
-	"consdev=ttymxc1\0"						\
 	"baudrate=115200\0"						\
 	"bootdev=/dev/mmcblk0p1\0"					\
 	"rootdev=/dev/mmcblk0p2\0"					\
 	"netdev=eth0\0"							\
+	"fdtfile=imx6q-novena.dtb\0"					\
 	"kernel_addr_r=0x12000000\0"					\
-        "fdt_addr_r=0x11ff0000\0"					\
-        "initrd_addr_r=-\0"						\
+	"fdt_addr_r=0x11ff0000\0"					\
+	"ramdisk_addr_r=0x10ff0000\0"					\
+	"scriptaddr=0x10aa0000\0"					\
+	"pxe_addr_r=0x10550000\0"					\
+	"initrd_addr_r=-\0"						\
 	"addcons="							\
 		"setenv bootargs ${bootargs} "				\
 		"console=${consdev},${baudrate}\0"			\
@@ -292,16 +301,17 @@
 	"net_nfs="							\
 		"run netload nfsargs addip addargs ; "			\
 		"bootm ${kernel_addr_r}\0"				\
-	"stdin=serial\0"						\
-	"stdout=serial\0"						\
-	"stderr=serial\0"						\
+	"stdin=serial,usbkbd\0"						\
+	"stdout=serial,vga\0"						\
+	"stderr=serial,vga\0"						\
 	"bootargs=init=/lib/systemd/systemd rootwait rw\0"		\
 	"bootenv=uEnv.txt\0"						\
         "loadbootenv=load ${bootsrc} ${bootdev} ${loadaddr} ${bootenv}\0" \
 	"importbootenv="						\
 		"echo Importing environment from ${bootsrc} ... ; "	\
 		"env import -t -r $loadaddr $filesize\0"		\
-	"rmlcd=fdt rm /soc/aips-bus@02000000/ldb@020e0008\0"		\
+	"rootdev=PARTUUID=4e6f764d-03\0" /* NovM */			\
+	"bootpart=1\0"							\
 	"novena_boot="							\
 		"if run loadbootenv; then "				\
 			"echo Loaded environment from ${bootenv} ; "	\
@@ -319,8 +329,7 @@
 		"fi ; "							\
 		"if lcddet ; then "					\
 			"echo IT6251 bridge chip detected ; "		\
-			"setenv consdev tty0 ; "			\
-			"setenv rmlcd true ; "				\
+			"setenv keep_lcd true ; "			\
 			"setenv video true ; "				\
 		"elif hdmidet ; then "					\
 			"echo HDMI monitor detected ; "			\
@@ -330,34 +339,33 @@
 			"setenv video false ; "				\
 		"fi ; "							\
 		"if gpio input 110 ; then " /* Test recovery button */  \
-			"if run video ; then "				\
-				"setenv stdout serial,vga ; "		\
-			"fi ; "						\
 			"echo Press Control-C to enter U-Boot shell, "	\
 				"or wait to enter recovery mode ; "	\
 			"if sleep 2 ; then true; else exit ; fi ; "	\
 			"echo Entering recovery mode... ; "		\
 			"setenv rec .recovery ;	"			\
 			"setenv bootargs ${bootargs} recovery ; "	\
-			"setenv rootdev PARTUUID=4e6f764d-03 ; " /* NovM */ \
 		"else ; "						\
 			"echo Hold recovery button to boot to "		\
 			"recovery, or to enter U-Boot shell. ; "	\
 		"fi ; "							\
 		"if run video ; then "					\
-			"setenv consdev tty0 ; "			\
+			"setenv console-bootarg tty0 ; "			\
 		"else ; "						\
-			"setenv consdev ${consdev},${baudrate} ; "	\
+			"setenv console-bootarg ttymxc1,${baudrate} ; "	\
 		"fi ; "							\
-		"fatload ${bootsrc} ${bootdev} "			\
-			"${kernel_addr_r} zImage${rec} ; "		\
-		"fatload ${bootsrc} ${bootdev} "			\
-			"${fdt_addr_r} novena${rec}.dtb ; "		\
-		"fdt addr ${fdt_addr_r}	; "				\
+		"if test -n \"${sata_boot}\" && test -z \"${rec}\"; then "	\
+			"sata init ; "					\
+			"setenv devtype sata ; "			\
+			"setenv devnum 0 ; "				\
+			"setenv rootdev PARTUUID=4e6f7653-03 ; " /* NovS */ \
+		"else ; "						\
+			"setenv devtype ${bootsrc} ; "			\
+			"setenv devnum ${bootdev} ; "			\
+		"fi ; "							\
+		"setenv boot_extlinux \"usb start; ${boot_extlinux} ;\"" \
 		"setenv bootargs ${bootargs} "				\
-			"root=${rootdev} "				\
-			"console=${consdev} ; "				\
-		"run rmlcd ; "						\
+			"root=${rootdev} ; "				\
 		"if test -n $finalhook; then "				\
 			"echo Running finalhook ... ; "			\
 			"run finalhook ; "				\
@@ -365,6 +373,12 @@
 			"echo To hook late boot process, add "		\
 				"a variable called finalhook ; "	\
 		"fi ; "							\
+		"run scan_dev_for_boot ; " 				\
+		"fatload ${bootsrc} ${bootdev} "			\
+			"${kernel_addr_r} zImage${rec} ; "		\
+		"fatload ${bootsrc} ${bootdev} "			\
+			"${fdt_addr_r} novena${rec}.dtb ; "		\
+		"fdt addr ${fdt_addr_r}	; "				\
 		"bootz ${kernel_addr_r} "				\
 			"${initrd_addr_r} "				\
 			"${fdt_addr_r} ; "				\
