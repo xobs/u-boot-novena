@@ -312,21 +312,34 @@
 		"env import -t -r $loadaddr $filesize\0"		\
 	"rootdev=PARTUUID=4e6f764d-03\0" /* NovM */			\
 	"bootpart=1\0"							\
-	"novena_boot="							\
+	"loaduenv="							\
 		"if run loadbootenv; then "				\
 			"echo Loaded environment from ${bootenv} ; "	\
 			"run importbootenv ; "				\
 		"else ; "						\
 			"echo To override boot, create a file on the "	\
 				"internal MMC called ${bootenv} ; "	\
-		"fi ; "							\
+		"fi\0"							\
+	"doearlyhook="							\
 		"if test -n $earlyhook; then "				\
 			"echo Running earlyhook ... ; "			\
 			"run earlyhook ; "				\
 		"else ; "						\
 			"echo To hook early boot process, add a "	\
 				"variable called earlyhook ; "		\
-		"fi ; "							\
+		"fi\0"							\
+	"dolatehook="							\
+		"if test -n ${finalhook} ; then "			\
+			"echo Running finalhook ... ; "			\
+			"run importbootenv ; "				\
+			"run finalhook ; "				\
+		"else ; "						\
+			"echo To hook late boot process, add "		\
+				"a variable called finalhook ; "	\
+		"fi\0"							\
+	"novena_boot="							\
+		"run loaduenv ; "					\
+		"run doearlyhook ; "					\
 		"if lcddet ; then "					\
 			"echo IT6251 bridge chip detected ; "		\
 			"setenv keep_lcd true ; "			\
@@ -363,16 +376,9 @@
 			"setenv devtype ${bootsrc} ; "			\
 			"setenv devnum ${bootdev} ; "			\
 		"fi ; "							\
+		"setenv bootargs ${bootargs} root=${rootdev} ; "	\
 		"setenv boot_extlinux \"usb start; ${boot_extlinux} ;\"" \
-		"setenv bootargs ${bootargs} "				\
-			"root=${rootdev} ; "				\
-		"if test -n $finalhook; then "				\
-			"echo Running finalhook ... ; "			\
-			"run finalhook ; "				\
-		"else ; "						\
-			"echo To hook late boot process, add "		\
-				"a variable called finalhook ; "	\
-		"fi ; "							\
+		"run dolatehook ; "					\
 		"run scan_dev_for_boot ; " 				\
 		"fatload ${bootsrc} ${bootdev} "			\
 			"${kernel_addr_r} zImage${rec} ; "		\
