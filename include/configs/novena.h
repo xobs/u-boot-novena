@@ -377,7 +377,7 @@
 			"setenv devnum ${bootdev} ; "			\
 		"fi ; "							\
 		"setenv bootargs ${bootargs} root=${rootdev} ; "	\
-		"setenv boot_extlinux \"usb start; ${boot_extlinux} ;\"" \
+		"setenv boot_extlinux \"usb start; ${boot_extlinux}\" ;"\
 		"run dolatehook ; "					\
 		"run scan_dev_for_boot ; " 				\
 		"fatload ${bootsrc} ${bootdev} "			\
