@@ -367,7 +367,7 @@
 		"else ; "						\
 			"setenv console-bootarg ttymxc1,${baudrate} ; "	\
 		"fi ; "							\
-		"if test -n \"${sata_boot}\" && test -z \"${rec}\"; then "	\
+		"if test -n \"${sata_root}\" && test -z \"${rec}\"; then "	\
 			"sata init ; "					\
 			"setenv devtype sata ; "			\
 			"setenv devnum 0 ; "				\

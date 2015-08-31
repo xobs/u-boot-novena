@@ -531,7 +531,7 @@ static int set_bootdev(void)
  	}
  
 	if (is_valid_eeprom_data() && (eeprom_data.features & feature_rootsrc_sata))
-		setenv("sata_boot", "yes");
+		setenv("sata_root", "yes");
 
 	return 0;
 }
