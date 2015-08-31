@@ -1,3 +1,9 @@
+u-boot-novena (2014.10.r6-novena.1) unstable; urgency=medium
+
+  * Fix booting on MMC systems
+
+ -- Sean Cross <xobs@kosagi.com>  Mon, 31 Aug 2015 18:42:22 +0800
+
 u-boot-novena (2014.10.r5-novena.1) unstable; urgency=medium
 
   * Merge patches to improve it6251 (thanks, hackwerk!)
