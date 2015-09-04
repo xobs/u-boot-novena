@@ -313,28 +313,6 @@ static int detect_lvds(struct display_info_t const *dev)
 
 struct display_info_t const displays[] = {
 	{
-		/* HDMI Output */
-		.bus	= -1,
-		.addr	= 0,
-		.pixfmt	= IPU_PIX_FMT_RGB24,
-		.detect	= detect_hdmi,
-		.enable	= enable_hdmi,
-		.mode	= {
-			.name		= "HDMI",
-			.refresh	= 60,
-			.xres		= 1024,
-			.yres		= 768,
-			.pixclock	= 15384,
-			.left_margin	= 220,
-			.right_margin	= 40,
-			.upper_margin	= 21,
-			.lower_margin	= 7,
-			.hsync_len	= 60,
-			.vsync_len	= 10,
-			.sync		= FB_SYNC_EXT,
-			.vmode		= FB_VMODE_NONINTERLACED
-		},
-	}, {
 		/* LVDS Output: N133HSE-EA1 Rev. C1 */
 		.bus	= -1,
 		.pixfmt	= IPU_PIX_FMT_RGB24,
@@ -356,6 +334,29 @@ struct display_info_t const displays[] = {
 					  FB_SYNC_VERT_HIGH_ACT |
 					  FB_SYNC_EXT,
 			.vmode		= FB_VMODE_NONINTERLACED,
+		},
+	},
+	{
+		/* HDMI Output */
+		.bus	= -1,
+		.addr	= 0,
+		.pixfmt	= IPU_PIX_FMT_RGB24,
+		.detect	= detect_hdmi,
+		.enable	= enable_hdmi,
+		.mode	= {
+			.name		= "HDMI",
+			.refresh	= 60,
+			.xres		= 1024,
+			.yres		= 768,
+			.pixclock	= 15384,
+			.left_margin	= 220,
+			.right_margin	= 40,
+			.upper_margin	= 21,
+			.lower_margin	= 7,
+			.hsync_len	= 60,
+			.vsync_len	= 10,
+			.sync		= FB_SYNC_EXT,
+			.vmode		= FB_VMODE_NONINTERLACED
 		},
 	},
 };
