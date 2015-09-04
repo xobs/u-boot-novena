@@ -1,3 +1,9 @@
+u-boot-novena (2014.10.r7-novena.1) unstable; urgency=medium
+
+  * Fix booting with HDMI monitor attached.
+
+ -- Sean Cross <xobs@kosagi.com>  Fri, 04 Sep 2015 10:08:10 +0800
+
 u-boot-novena (2014.10.r6-novena.1) unstable; urgency=medium
 
   * Fix booting on MMC systems
