@@ -1,3 +1,9 @@
+u-boot-novena (2014.10.r8-novena.1) unstable; urgency=medium
+
+  * Apply patch to keep boot working when LCD fails
+
+ -- Sean Cross <xobs@kosagi.com>  Sun, 21 Feb 2016 14:01:33 +0800
+
 u-boot-novena (2014.10.r7-novena.1) unstable; urgency=medium
 
   * Fix booting with HDMI monitor attached.
