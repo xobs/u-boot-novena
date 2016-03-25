@@ -18,7 +18,7 @@ if [ -f /boot/zimage  ]; then
 fi
 
 if [ -f /boot/zimage  ]; then
-cp "/boot/novena.dtb" "/usr/share/linux-novena/boot_backup/novena_backup.dtb"
+	cp "/boot/novena.dtb" "/usr/share/linux-novena/boot_backup/novena_backup.dtb"
 fi
 
 cp "$2" "/boot/zimage"
