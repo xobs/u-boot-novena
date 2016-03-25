@@ -1,4 +1,18 @@
 #!/bin/sh
 echo "Installing new kernel to /boot"
+
+if [ ! -d /usr/share/linux-novena/boot_backup/ ]; then
+	mkdir /usr/share/linux-novena/boot_backup/
+fi
+if [ -f /boot/uImage ]; then
+cp /boot/uImage /usr/share/linux-novena/boot_backup/uImage_backup
+fi
+if [ -f /boot/uInitrd  ]; then
+cp /boot/uInitrd /usr/share/linux-novena/boot_backup/uInitrd_backup
+fi
+
+cp "/boot/zimage" "/usr/share/linux-novena/boot_backup/zimage_backup"
+cp "/boot/novena.dtb" "/usr/share/linux-novena/boot_backup/novena_backup.dtb"
+
 cp "$2" "/boot/zimage"
 cp "$2.dtb" "/boot/novena.dtb"
