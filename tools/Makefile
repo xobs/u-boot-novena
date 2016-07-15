@@ -128,7 +128,7 @@ HOSTLOADLIBES_dumpimage := $(HOSTLOADLIBES_mkimage)
 HOSTLOADLIBES_fit_info := $(HOSTLOADLIBES_mkimage)
 HOSTLOADLIBES_fit_check_sign := $(HOSTLOADLIBES_mkimage)
 
-HOSTLDFLAGS += -T $(srctree)/tools/imagetool.lds
+HOSTLDFLAGS += -T $(srctree)/tools/imagetool.lds -z norelro
 
 hostprogs-$(CONFIG_EXYNOS5250) += mkexynosspl
 hostprogs-$(CONFIG_EXYNOS5420) += mkexynosspl
